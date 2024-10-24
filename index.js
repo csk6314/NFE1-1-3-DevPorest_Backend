@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const { swaggerUi, specs } = require("./swagger");
+
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -18,6 +20,7 @@ mongoose
 app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json()); // JSON 파싱
 app.use(cookieParser()); // 쿠키 파싱
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs)); // Swagger UI를 /api-docs 경로에 라우팅
 
 // 기본 라우트 설정
 app.get("/", (req, res) => {
