@@ -73,3 +73,21 @@ const getGithubCallback = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+const logout = (req, res) => {
+  // "token" 쿠키 삭제
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+    expires: new Date(0),
+  });
+  res.json("로그아웃 되었습니다.");
+};
+
+module.exports = {
+  getGithubCallback,
+  getGithubRedirectURL,
+  logout,
+};
