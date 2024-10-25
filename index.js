@@ -25,20 +25,18 @@ const connectDB = async () => {
 // MongoDB 연결
 connectDB();
 
-const corsOptions = {
-  origin: [
-    process.env.CORS_ORIGIN,
-    "http://localhost:5173", // React 개발 서버
-    "http://localhost:8000", // Express 서버
-    /localhost:\d+$/, // localhost의 모든 포트 허용
-  ],
-  credentials: true, // 응답 헤더에 Access-Control-Allow-Credentials 추가
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
 // 미들웨어 설정
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: [
+      process.env.CORS_ORIGIN,
+      "http://localhost:5173",
+      "http://localhost:8000",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json()); // JSON 파싱
 app.use(cookieParser()); // 쿠키 파싱
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs)); // Swagger UI를 /api-docs 경로에 라우팅
