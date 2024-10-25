@@ -3,11 +3,7 @@ const Schema = mongoose.Schema;
 
 const portfolioSchema = new Schema(
   {
-    portfolioID: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    // _id : 자동생성됨
     title: {
       type: String,
       required: true,
@@ -58,7 +54,6 @@ const portfolioSchema = new Schema(
 );
 
 // 1은 오름차순, -1은 내림차순 정렬을 의미합니다
-portfolioSchema.index({ portfolioID: 1 }); // portfolioID로 특정 포트폴리오 검색 시 성능 향상
 portfolioSchema.index({ userID: 1 }); // 특정 사용자의 모든 포트폴리오 검색 시 성능 향상
 portfolioSchema.index({ jobGroup: 1 }); // 특정 직군의 포트폴리오 목록 검색 시 성능 향상
 portfolioSchema.index({ createdAt: -1 }); // 최신순 정렬 시 성능 향상
