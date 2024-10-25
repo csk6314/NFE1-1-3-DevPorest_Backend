@@ -1,3 +1,24 @@
+const express = require("express");
+const router = express.Router();
+const portfolioController = require("../controllers/portfolioController.js");
+
+// GET /api/portfolios
+router.get("/", portfolioController.getAllPortfolios);
+
+// POST /api/portfolios
+router.post("/", portfolioController.createPortfolio);
+
+// PUT /api/portfolios/:id
+router.put("/:id", portfolioController.updatePortfolio);
+
+// DELETE /api/portfolios/:id
+router.delete("/:id", portfolioController.deletePortfolio);
+
+// GET /api/portfolios/:id
+router.get("/:id", portfolioController.getPortfolioById);
+
+module.exports = router;
+
 /**
  * @swagger
  * tags:
@@ -89,6 +110,60 @@
 
 /**
  * @swagger
+ * /api/portfolios/{id}:
+ *   get:
+ *     summary: 포트폴리오 상세 조회
+ *     tags: [Portfolios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID (24자리 16진수 ObjectId)
+ *     responses:
+ *       200:
+ *         description: 포트폴리오 상세 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Portfolio'
+ *       400:
+ *         description: 잘못된 요청
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 유효하지 않은 포트폴리오 ID입니다.
+ *       404:
+ *         description: 포트폴리오를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 해당 ID의 포트폴리오를 찾을 수 없습니다.
+ */
+
+/**
+ * @swagger
  * /api/portfolios:
  *   post:
  *     summary: 새 포트폴리오 생성
@@ -126,15 +201,69 @@
  *                   type: string
  *                   example: 포트폴리오 생성에 실패했습니다.
  */
-
-const express = require("express");
-const router = express.Router();
-const portfolioController = require("../controllers/portfolioController.js");
-
-// GET /api/portfolios
-router.get("/", portfolioController.getAllPortfolios);
-
-// POST /api/portfolios
-router.post("/", portfolioController.createPortfolio);
-
-module.exports = router;
+/**
+ * @swagger
+ * /api/portfolios/{id}:
+ *   put:
+ *     summary: 포트폴리오 수정
+ *     tags: [Portfolios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID (24자리 16진수 ObjectId)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Portfolio'
+ *     responses:
+ *       200:
+ *         description: 포트폴리오 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Portfolio'
+ *       400:
+ *         description: 잘못된 요청
+ *       404:
+ *         description: 포트폴리오를 찾을 수 없음
+ *
+ *   delete:
+ *     summary: 포트폴리오 삭제
+ *     tags: [Portfolios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID
+ *     responses:
+ *       200:
+ *         description: 포트폴리오 삭제 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 포트폴리오가 성공적으로 삭제되었습니다.
+ *       400:
+ *         description: 잘못된 요청
+ *       404:
+ *         description: 포트폴리오를 찾을 수 없음
+ */
