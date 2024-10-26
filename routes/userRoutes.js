@@ -14,6 +14,8 @@ router.get("/:userid", userController.getUserInfo);
 
 router.post("/", auth, userController.registerUserProfile);
 
+router.put("/", auth, userController.modifyUserProfile);
+
 module.exports = router;
 
 /**
@@ -155,4 +157,44 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: 유저 프로필 등록에 실패했습니다.
+ */
+
+/**
+ * @swagger
+ * /api/user:
+ *   put:
+ *     summary: 유저 프로필 수정
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: 유저 프로필 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 유저 프로필 수정에 실패했습니다.
  */

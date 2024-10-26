@@ -60,7 +60,47 @@ const registerUserProfile = async (req, res) => {
   }
 };
 
+const modifyUserProfile = async (req, res) => {
+  const { id } = req.userinfo;
+
+  try {
+    //github 정보인 name과 userID 변경 방지
+    if (req.body["name"] || req.body["userID"]) {
+      return res.status(400).json({
+        success: false,
+        error: "잘못된 접근입니다.",
+      });
+    }
+
+    const userDoc = await User.findOneAndUpdate(
+      { userID: id },
+      {
+        ...req.body,
+      }
+    );
+
+    // 만약 user가 없을 경우
+    if (!userDoc) {
+      return res.status(404).json({
+        success: false,
+        error: "해당 ID의 유저를 찾을 수 없습니다.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: userDoc,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err.message || "유저 프로필 수정에 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   getUserInfo,
   registerUserProfile,
+  modifyUserProfile,
 };
