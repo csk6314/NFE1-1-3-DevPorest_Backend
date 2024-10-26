@@ -1,7 +1,9 @@
 const express = require("express");
-const TechStack = require("../models/TechStack");
-const techStackController = require("../controllers/techStackController");
 const router = express.Router();
+
+const techStackController = require("../controllers/techStackController");
+
+router.get("/", techStackController.getAllTechStacks);
 
 router.post("/", techStackController.createTechStack);
 

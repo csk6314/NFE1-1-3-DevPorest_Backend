@@ -22,6 +22,23 @@ const createTechStack = async (req, res) => {
   }
 };
 
+const getAllTechStacks = async (req, res) => {
+  try {
+    const techStacks = await TechStack.find().sort({ skill: 1 }).select("-__v");
+
+    res.status(200).json({
+      success: true,
+      data: techStacks,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "기술스택 목록을 가져오는데 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   createTechStack,
+  getAllTechStacks,
 };
