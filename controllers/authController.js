@@ -55,7 +55,11 @@ const getGithubCallback = async (req, res) => {
     }).then((res) => res.json());
 
     // 가져온 유저 ID를 JWT로 변환
-    const token = jwt.sign({ id: userData.login }, secret, {});
+    const token = jwt.sign(
+      { id: userData.login, access_token: accessToken },
+      secret,
+      {}
+    );
 
     // cookie에 JWT를 넣어준다.
     res
