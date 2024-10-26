@@ -17,25 +17,28 @@ const portfolioSchema = new Schema(
       required: true,
       default: 0,
     },
-    images: {
-      type: [String], // 배열 형태로 본문 이미지 URL을 저장
-      required: true,
-    },
-    tags: {
-      type: [String],
-      default: [],
-    },
+    images: [{ type: String, required: true }], // 각 배열요소의 상세 컨트롤 가능
+    tags: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
     createdAt: {
       type: Date,
       required: true,
       default: Date.now, // UTC 기준으로 저장, 조회 시 한국 시간으로 변환 필요
     },
-    techStack: {
-      type: [String],
-      required: true,
-    },
+    techStack: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "TechStack",
+        required: true,
+      },
+    ],
     jobGroup: {
-      type: Number,
+      type: Schema.Types.ObjectId,
+      ref: "JobGroup",
       required: true,
     },
     thumbnailImage: {
