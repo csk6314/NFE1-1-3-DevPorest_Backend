@@ -15,7 +15,7 @@ const auth = (req, res, next) => {
     const verified = jwt.verify(token, secret);
 
     // 검증된 사용자 정보를 request 객체에 저장
-    req.userid = verified;
+    req.userinfo = verified;
 
     // 다음 미들웨어로 진행
     next();
