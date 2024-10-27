@@ -31,8 +31,7 @@ const portfolioSchema = new Schema(
     },
     techStack: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "TechStack",
+        type: String,
         required: true,
       },
     ],
