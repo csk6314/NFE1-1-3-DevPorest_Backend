@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const portfolioController = require("../controllers/portfolioController.js");
+const auth = require("../middleware/auth");
 
 // GET /api/portfolios
 router.get("/", portfolioController.getAllPortfolios);
@@ -16,6 +17,8 @@ router.delete("/:id", portfolioController.deletePortfolio);
 
 // GET /api/portfolios/:id
 router.get("/:id", portfolioController.getPortfolioById);
+
+router.post("/:id/like", auth, portfolioController.toggleLike);
 
 module.exports = router;
 
@@ -266,4 +269,35 @@ module.exports = router;
  *         description: 잘못된 요청
  *       404:
  *         description: 포트폴리오를 찾을 수 없음
+ */
+/**
+ * @swagger
+ * /api/portfolios/{id}/like:
+ *   post:
+ *     summary: 포트폴리오 좋아요 (토글)
+ *     tags: [Portfolios]
+ *     responses:
+ *       201:
+ *         description: 포트폴리오 좋아요 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 like:
+ *                   type: boolean
+ *                   example: true
+ *                 likeCount:
+ *                   type: number
+ *                   example: 0
+ *       500:
+ *         description: Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 서버 에러
  */

@@ -1,3 +1,4 @@
+const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
 
@@ -166,10 +167,34 @@ const deletePortfolio = async (req, res) => {
   }
 };
 
+// 좋아요 토글 기능
+const toggleLike = async (req, res) => {
+  const { id: portfolioID } = req.params;
+  const { id: userID } = req.userinfo;
+
+  try {
+    const likeCount = (await Like.find({ portfolioID })).length;
+    const like = await Like.findOne({ portfolioID, userID });
+
+    //좋아요 없는 경우 => 좋아요 생성
+    if (!like) {
+      await Like.create({ portfolioID, userID });
+      return res.json({ like: true, likeCount: likeCount + 1 });
+    }
+
+    //좋아요 있는 경우 => 좋아요 삭제
+    await Like.deleteOne({ portfolioID, userID });
+    res.json({ like: false, likeCount: likeCount - 1 });
+  } catch (error) {
+    res.status(500).json({ message: "서버 에러" });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
   updatePortfolio,
   deletePortfolio,
   getPortfolioById,
+  toggleLike,
 };
