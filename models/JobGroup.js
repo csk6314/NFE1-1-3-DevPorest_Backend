@@ -5,6 +5,7 @@ const jobGroupSchema = new Schema({
   job: {
     type: String,
     required: true,
+    unique: true,
   },
 });
 
