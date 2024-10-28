@@ -15,6 +15,8 @@ router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api
 // GET /api/portfolios/search/:type/:keyword
 router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
 
+router.post("/:id/like", auth, portfolioController.toggleLike);
+
 module.exports = router;
 
 /**
@@ -90,7 +92,13 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       500:
  *         description: 서버 에러
  *         content:
@@ -131,7 +139,16 @@ module.exports = router;
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/Portfolio'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         like:
+ *                           type: boolean
+ *                           example: false
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       400:
  *         description: 잘못된 요청
  *         content:
@@ -452,4 +469,35 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: "포트폴리오 검색에 실패했습니다."
+ */
+/**
+ * @swagger
+ * /api/portfolios/{id}/like:
+ *   post:
+ *     summary: 포트폴리오 좋아요 (토글)
+ *     tags: [Portfolios]
+ *     responses:
+ *       201:
+ *         description: 포트폴리오 좋아요 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 like:
+ *                   type: boolean
+ *                   example: true
+ *                 likeCount:
+ *                   type: number
+ *                   example: 0
+ *       500:
+ *         description: Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 서버 에러
  */
