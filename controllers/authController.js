@@ -151,7 +151,7 @@ const logout = (req, res) => {
   res.json("로그아웃 되었습니다.");
 };
 
-// 프론트엔드 소스에서 mock login을 위한 API
+// 프론트엔드 소스에서 mock login을 위한 API, swagger 에서는 login api로 대체 가능
 const getMockToken = (req, res) => {
   if (process.env.NODE_ENV === "production") {
     return res.status(403).json({ error: "개발 환경에서만 사용 가능합니다." });
