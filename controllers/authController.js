@@ -37,8 +37,6 @@ const getGithubCallback = async (req, res) => {
         login: "user555",
         id: "user555",
         name: "user555",
-        // avatar_url: "https://github.com/images/mock-avatar.png",
-        // email: "mock@example.com",
       };
 
       // JWT 토큰 생성
@@ -153,8 +151,46 @@ const logout = (req, res) => {
   res.json("로그아웃 되었습니다.");
 };
 
+// 프론트엔드 소스에서 mock login을 위한 API
+const getMockToken = (req, res) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({ error: "개발 환경에서만 사용 가능합니다." });
+  }
+
+  const mockUserData = {
+    login: "user555",
+    id: "user555",
+    name: "user555",
+  };
+
+  const token = jwt.sign(
+    {
+      id: mockUserData.login,
+      access_token: "mock_access_token_123",
+    },
+    secret,
+    {}
+  );
+
+  res
+    .status(200)
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+    .json({
+      success: true,
+      message: "Mock authentication successful",
+      userData: mockUserData,
+    });
+};
+
 module.exports = {
   getGithubCallback,
   getGithubRedirectURL,
   logout,
+  getMockToken,
 };

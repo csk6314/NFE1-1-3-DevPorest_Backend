@@ -66,4 +66,6 @@ router.get("/github/callback", authController.getGithubCallback);
  */
 router.get("/logout", authController.logout);
 
+router.get("/mock-login", authController.getMockToken);
+
 module.exports = router;
