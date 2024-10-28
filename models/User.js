@@ -33,7 +33,13 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now, // UTC 기준으로 저장, 조회 시 한국 시간으로 변환 필요
   },
-  techStack: [{ type: Schema.Types.ObjectId, ref: "TechStack" }],
+  techStack: [
+    {
+      type: String,
+      required: true,
+      ref: "TechStack",
+    },
+  ],
   jobGroup: {
     type: Schema.Types.ObjectId,
     ref: "JobGroup",
