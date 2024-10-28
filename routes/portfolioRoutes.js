@@ -1,21 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const portfolioController = require("../controllers/portfolioController.js");
+const auth = require("../middleware/auth");
 
-// GET /api/portfolios
-router.get("/", portfolioController.getAllPortfolios);
+// 전체 조회는 인증이 필요없으므로 미들웨어 적용하지 않음
+router.get("/", portfolioController.getAllPortfolios); // GET /api/portfolios
+router.get("/:id", portfolioController.getPortfolioById); // GET /api/portfolios/:id
 
-// POST /api/portfolios
-router.post("/", portfolioController.createPortfolio);
-
-// PUT /api/portfolios/:id
-router.put("/:id", portfolioController.updatePortfolio);
-
-// DELETE /api/portfolios/:id
-router.delete("/:id", portfolioController.deletePortfolio);
-
-// GET /api/portfolios/:id
-router.get("/:id", portfolioController.getPortfolioById);
+// 생성, 수정, 삭제는 인증된 사용자만 가능하도록 auth 미들웨어 적용
+router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfolios
+router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
+router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
 
 module.exports = router;
 
@@ -166,7 +161,9 @@ module.exports = router;
  * @swagger
  * /api/portfolios:
  *   post:
- *     summary: 새 포트폴리오 생성
+ *     summary: 새 포트폴리오 생성 (인증 필요)
+ *     security:
+ *       - cookieAuth: []
  *     tags: [Portfolios]
  *     requestBody:
  *       required: true
@@ -187,6 +184,16 @@ module.exports = router;
  *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Portfolio'
+ *       401:
+ *         description: 인증 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 인증이 필요합니다
  *       400:
  *         description: Bad request
  *         content:
@@ -201,11 +208,14 @@ module.exports = router;
  *                   type: string
  *                   example: 포트폴리오 생성에 실패했습니다.
  */
+
 /**
  * @swagger
  * /api/portfolios/{id}:
  *   put:
- *     summary: 포트폴리오 수정
+ *     summary: 포트폴리오 수정 (인증 필요)
+ *     security:
+ *       - cookieAuth: []
  *     tags: [Portfolios]
  *     parameters:
  *       - in: path
@@ -233,13 +243,36 @@ module.exports = router;
  *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Portfolio'
- *       400:
- *         description: 잘못된 요청
+ *       401:
+ *         description: 인증 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 인증이 필요합니다
+ *       403:
+ *         description: 권한 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 포트폴리오를 수정할 권한이 없습니다.
  *       404:
  *         description: 포트폴리오를 찾을 수 없음
  *
  *   delete:
- *     summary: 포트폴리오 삭제
+ *     summary: 포트폴리오 삭제 (인증 필요)
+ *     security:
+ *       - cookieAuth: []
  *     tags: [Portfolios]
  *     parameters:
  *       - in: path
@@ -262,8 +295,29 @@ module.exports = router;
  *                 message:
  *                   type: string
  *                   example: 포트폴리오가 성공적으로 삭제되었습니다.
- *       400:
- *         description: 잘못된 요청
+ *       401:
+ *         description: 인증 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 인증이 필요합니다
+ *       403:
+ *         description: 권한 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 포트폴리오를 삭제할 권한이 없습니다.
  *       404:
  *         description: 포트폴리오를 찾을 수 없음
  */

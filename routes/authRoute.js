@@ -30,7 +30,7 @@ router.get("/github", authController.getGithubRedirectURL);
  *     - Auth
  *     summary: Github OAuth Callback API
  *     parameters:
- *      - name: id
+ *      - name: code
  *        in: query
  *        description: Github Authorization Code
  *        schema:
