@@ -29,7 +29,16 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
+// Swagger UI 커스텀 옵션 설정
+const swaggerUiOptions = {
+  swaggerOptions: {
+    persistAuthorization: true, // 페이지 새로고침해도 인증 상태 유지
+    withCredentials: true, // 쿠키 전송 허용
+  },
+};
+
 module.exports = {
   swaggerUi,
   specs,
+  swaggerUiOptions, // 새로 추가된 옵션 export
 };
