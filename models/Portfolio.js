@@ -30,10 +30,12 @@ const portfolioSchema = new Schema(
       required: true,
       default: Date.now, // UTC 기준으로 저장, 조회 시 한국 시간으로 변환 필요
     },
-    techStack: {
-      type: [String],
-      required: true,
-    },
+    techStack: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
     jobGroup: {
       type: Schema.Types.ObjectId,
       required: true,
