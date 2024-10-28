@@ -17,14 +17,13 @@ const portfolioSchema = new Schema(
       required: true,
       default: 0,
     },
-    images: {
-      type: [String], // 배열 형태로 본문 이미지 URL을 저장
-      required: true,
-    },
-    tags: {
-      type: [String],
-      default: [],
-    },
+    images: [{ type: String, required: true }], // 각 배열요소의 상세 컨트롤 가능
+    tags: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
     createdAt: {
       type: Date,
       required: true,

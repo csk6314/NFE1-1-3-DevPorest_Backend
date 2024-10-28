@@ -191,10 +191,107 @@ const deletePortfolio = async (req, res) => {
   }
 };
 
+// 포트폴리오 검색
+const searchPortfolios = async (req, res) => {
+  try {
+    const { type, keyword } = req.params;
+    const { sort = "latest" } = req.query; // 정렬 옵션: 'latest' 또는 'popular'
+
+    // 타입과 키워드 처리 - 하이픈이나 공백인 경우 빈 문자열로 처리
+    const searchType = type === "-" || type === " " ? "" : type;
+    const searchKeyword = keyword === "-" || keyword === " " ? "" : keyword;
+
+    // 검색 조건 설정
+    const matchStage = {};
+
+    // 기술 스택 검색 조건
+    if (searchType) {
+      matchStage.techStack = searchType; // 문자열 배열에서 직접 검색
+    }
+
+    // 키워드 검색 조건 (제목에서 검색, 대소문자 구분 없이)
+    if (searchKeyword) {
+      matchStage.title = new RegExp(searchKeyword, "i");
+    }
+
+    // Aggregation Pipeline 구성
+    const pipeline = [
+      { $match: matchStage },
+      {
+        // Like 컬렉션과 조인하여 좋아요 수 계산
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "portfolioID",
+          as: "likes",
+        },
+      },
+      {
+        // 좋아요 수를 계산하여 새로운 필드 추가
+        $addFields: {
+          likeCount: { $size: "$likes" },
+        },
+      },
+      // jobGroup 정보 조회
+      {
+        $lookup: {
+          from: "jobgroups",
+          localField: "jobGroup",
+          foreignField: "_id",
+          as: "jobGroupInfo",
+        },
+      },
+      {
+        $unwind: {
+          path: "$jobGroupInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 필요한 필드만 선택
+      {
+        $project: {
+          title: 1,
+          contents: 1,
+          view: 1,
+          images: 1,
+          tags: 1,
+          techStack: 1, // 기술 스택은 문자열 배열로 직접 표시
+          createdAt: 1,
+          thumbnailImage: 1,
+          userID: 1,
+          likeCount: 1,
+          jobGroup: "$jobGroupInfo", // jobGroup 정보 매핑
+        },
+      },
+    ];
+
+    // 정렬 조건 추가
+    if (sort === "popular") {
+      pipeline.push({ $sort: { likeCount: -1, createdAt: -1 } });
+    } else {
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    const portfolios = await Portfolio.aggregate(pipeline);
+
+    res.status(200).json({
+      success: true,
+      count: portfolios.length,
+      data: portfolios,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "포트폴리오 검색에 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
   updatePortfolio,
   deletePortfolio,
   getPortfolioById,
+  searchPortfolios,
 };
