@@ -33,10 +33,9 @@ const portfolioSchema = new Schema(
     techStack: {
       type: [String],
       required: true,
-      ref: "TechStack", // TechStack 모델을 참조
     },
     jobGroup: {
-      type: Number,
+      type: Schema.Types.ObjectId,
       required: true,
       ref: "JobGroup", // JobGroup 모델을 참조
     },

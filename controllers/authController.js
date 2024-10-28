@@ -37,8 +37,8 @@ const getGithubCallback = async (req, res) => {
         login: "user555",
         id: "user555",
         name: "user555",
-        avatar_url: "https://github.com/images/mock-avatar.png",
-        email: "mock@example.com",
+        // avatar_url: "https://github.com/images/mock-avatar.png",
+        // email: "mock@example.com",
       };
 
       // JWT 토큰 생성
