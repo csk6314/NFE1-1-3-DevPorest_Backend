@@ -95,7 +95,13 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       500:
  *         description: 서버 에러
  *         content:
@@ -136,7 +142,16 @@ module.exports = router;
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/Portfolio'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         like:
+ *                           type: boolean
+ *                           example: false
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       400:
  *         description: 잘못된 요청
  *         content:

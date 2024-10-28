@@ -90,7 +90,13 @@ module.exports = router;
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/User'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/User'
+ *                     - type: object
+ *                       properties:
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       400:
  *         description: 잘못된 요청
  *         content:
