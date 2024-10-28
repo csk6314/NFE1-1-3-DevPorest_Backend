@@ -66,8 +66,9 @@ const createPortfolio = async (req, res) => {
       techStack,
       jobGroup,
       thumbnailImage,
-      userID,
     } = req.body;
+
+    const userID = req.userinfo.id;
 
     const portfolio = new Portfolio({
       title,
@@ -77,7 +78,7 @@ const createPortfolio = async (req, res) => {
       techStack,
       jobGroup,
       thumbnailImage,
-      userID,
+      userID, // 인증된 사용자의 ID 사용
     });
 
     const savedPortfolio = await portfolio.save();
@@ -98,6 +99,7 @@ const createPortfolio = async (req, res) => {
 const updatePortfolio = async (req, res) => {
   try {
     const { id } = req.params;
+    const userID = req.userinfo.id;
 
     // 유효한 ObjectId인지 확인
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -107,18 +109,29 @@ const updatePortfolio = async (req, res) => {
       });
     }
 
-    const portfolio = await Portfolio.findByIdAndUpdate(
-      id,
-      { ...req.body },
-      { new: true, runValidators: true }
-    );
+    // 포트폴리오 소유자 확인
+    const existingPortfolio = await Portfolio.findById(id);
 
-    if (!portfolio) {
+    if (!existingPortfolio) {
       return res.status(404).json({
         success: false,
         error: "해당 ID의 포트폴리오를 찾을 수 없습니다.",
       });
     }
+
+    // 포트폴리오 소유자가 아닌 경우
+    if (existingPortfolio.userID !== userID) {
+      return res.status(403).json({
+        success: false,
+        error: "포트폴리오를 수정할 권한이 없습니다.",
+      });
+    }
+
+    const portfolio = await Portfolio.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true, runValidators: true }
+    );
 
     res.status(200).json({
       success: true,
@@ -136,6 +149,7 @@ const updatePortfolio = async (req, res) => {
 const deletePortfolio = async (req, res) => {
   try {
     const { id } = req.params;
+    const userID = req.userinfo.id;
 
     // 유효한 ObjectId인지 확인
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -145,14 +159,25 @@ const deletePortfolio = async (req, res) => {
       });
     }
 
-    const portfolio = await Portfolio.findByIdAndDelete(id);
+    // 포트폴리오 소유자 확인
+    const existingPortfolio = await Portfolio.findById(id);
 
-    if (!portfolio) {
+    if (!existingPortfolio) {
       return res.status(404).json({
         success: false,
         error: "해당 ID의 포트폴리오를 찾을 수 없습니다.",
       });
     }
+
+    // 포트폴리오 소유자가 아닌 경우
+    if (existingPortfolio.userID !== userID) {
+      return res.status(403).json({
+        success: false,
+        error: "포트폴리오를 삭제할 권한이 없습니다.",
+      });
+    }
+
+    await Portfolio.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,

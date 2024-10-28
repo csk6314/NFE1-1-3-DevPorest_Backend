@@ -37,8 +37,8 @@ const portfolioSchema = new Schema(
     ],
     jobGroup: {
       type: Schema.Types.ObjectId,
-      ref: "JobGroup",
       required: true,
+      ref: "JobGroup", // JobGroup 모델을 참조
     },
     thumbnailImage: {
       type: String,

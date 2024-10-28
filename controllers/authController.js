@@ -23,6 +23,69 @@ const getGithubCallback = async (req, res) => {
   }
 
   try {
+    // 깃허브 로그인이 불가한 개발 환경에서는 mock 데이터 사용
+    if (process.env.NODE_ENV === "development2") {
+      // Mock GitHub OAuth token response
+      const mockTokenResponse = {
+        access_token: "mock_github_access_token_123",
+        token_type: "bearer",
+        scope: "user",
+      };
+
+      // Mock GitHub user data
+      const mockUserData = {
+        login: "user555",
+        id: "user555",
+        name: "user555",
+        // avatar_url: "https://github.com/images/mock-avatar.png",
+        // email: "mock@example.com",
+      };
+
+      // JWT 토큰 생성
+      const token = jwt.sign(
+        {
+          id: mockUserData.login,
+          access_token: mockTokenResponse.access_token,
+        },
+        secret,
+        {}
+      );
+
+      // Swagger 테스트를 위해 리다이렉트 대신 JSON 응답 반환
+      const referer = req.headers.referer || "";
+      const isSwaggerRequest = referer.includes("/api-docs");
+      if (isSwaggerRequest) {
+        return res
+          .status(200)
+          .cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 24 * 60 * 60 * 1000,
+          })
+          .json({
+            success: true,
+            message: "Mock authentication successful",
+            userData: mockUserData,
+            token,
+          });
+      }
+
+      // 일반 요청의 경우 기존과 동일하게 쿠키 설정 및 리다이렉트
+      return res
+        .status(201)
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          path: "/",
+          maxAge: 24 * 60 * 60 * 1000,
+        })
+        .redirect(frontMainURL);
+    }
+
+    // 운영 환경에서는 실제 GitHub API 호출
     //Authorization Code를 사용하여 Github Access Token 가져오기
     const tokenResponse = await fetch(
       `https://github.com/login/oauth/access_token`,
