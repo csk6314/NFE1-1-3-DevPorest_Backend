@@ -9,10 +9,27 @@ const getAllPortfolios = async (req, res) => {
       .sort({ createdAt: -1 }) // 최신순 정렬
       .select("-__v"); // __v 필드 제외하고 클라이언트에 보여줌
 
+    /*
+     * 추가적인 DetailData 삽입
+     * 일단 likeCount만 추가
+     * CommentCount 추가 해야함
+     **/
+    const portfoliosWithDetails = await Promise.all(
+      portfolios.map(async (portfolio) => {
+        const likeCount = await Like.countDocuments({
+          portfolioID: portfolio._id,
+        });
+        return {
+          ...portfolio.toObject(),
+          likeCount,
+        };
+      })
+    );
+
     res.status(200).json({
       success: true,
       count: portfolios.length,
-      data: portfolios,
+      data: portfoliosWithDetails,
     });
   } catch (error) {
     res.status(500).json({
@@ -44,9 +61,28 @@ const getPortfolioById = async (req, res) => {
       });
     }
 
+    // 좋아요 상태 및 카운트 처리
+    const portfolioLikes = await Like.find({ portfolioID: id });
+    const likeCount = portfolioLikes.length;
+
+    let like = false;
+
+    //로그인 한 상태
+    if (req.userinfo) {
+      const { id: userID } = req.userinfo;
+      // 유저 ID가 일치하는 좋아요가 있으면 좋아요 상태 ON
+      if (portfolioLikes.find((doc) => doc.userID === userID)) {
+        like = true;
+      }
+    }
+
     res.status(200).json({
       success: true,
-      data: portfolio,
+      data: {
+        ...portfolio.toObject(),
+        like,
+        likeCount,
+      },
     });
   } catch (error) {
     res.status(400).json({
