@@ -1,4 +1,3 @@
-const Like = require("../models/Like");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 
