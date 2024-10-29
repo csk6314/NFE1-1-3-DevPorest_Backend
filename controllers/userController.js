@@ -159,6 +159,13 @@ const getPopularUserProfile = async (req, res) => {
           localField: "userID",
           foreignField: "userID",
           as: "user_portfolios",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
         },
       },
       {
@@ -171,6 +178,13 @@ const getPopularUserProfile = async (req, res) => {
           localField: "user_portfolios._id",
           foreignField: "portfolioID",
           as: "post_likes",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
         },
       },
       {
