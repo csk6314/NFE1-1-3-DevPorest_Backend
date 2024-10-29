@@ -66,7 +66,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /api/user/{userid}:
+ * /api/users/user/{userid}:
  *   get:
  *     summary: 유저 프로필 조회
  *     tags: [User]
@@ -126,7 +126,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /api/user:
+ * /api/users:
  *   post:
  *     summary: 유저 프로필 등록
  *     tags: [User]
@@ -166,7 +166,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /api/user:
+ * /api/users:
  *   put:
  *     summary: 유저 프로필 수정
  *     tags: [User]
