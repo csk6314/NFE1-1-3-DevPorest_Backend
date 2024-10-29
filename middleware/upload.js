@@ -1,23 +1,14 @@
 const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { S3Client } = require("@aws-sdk/client-s3"); // v3으로 전환
 const path = require("path");
-const fs = require("fs");
 
-// uploads 폴더 경로 설정 (루트 디렉토리 기준)
-const uploadDir = path.join(__dirname, "../uploads/");
-
-// uploads 폴더가 없으면 생성
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Multer 설정
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+// S3 클라이언트 초기화 (v3)
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
@@ -36,8 +27,18 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Multer S3 설정
 const upload = multer({
-  storage: storage,
+  storage: multerS3({
+    s3: s3Client,
+    bucket: process.env.AWS_S3_BUCKET,
+    key: function (req, file, cb) {
+      const userID = req.userinfo.id;
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, `${userID}/${uniqueSuffix}${path.extname(file.originalname)}`);
+    },
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+  }),
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB 제한

@@ -1,6 +1,5 @@
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
-const fileHandler = require("../utils/fileHandler");
 
 // 포트폴리오 목록 조회
 const getAllPortfolios = async (req, res) => {
@@ -315,7 +314,8 @@ const uploadSingleImage = async (req, res) => {
       });
     }
 
-    const imageUrl = await fileHandler.uploadFileToS3(req.file, req.userinfo);
+    // multer-s3는 자동으로 S3에 업로드하고 location을 제공
+    const imageUrl = req.file.location;
 
     res.status(200).json({
       success: true,
@@ -340,10 +340,8 @@ const uploadMultipleImages = async (req, res) => {
       });
     }
 
-    const imageUrls = await fileHandler.uploadMultipleFilesToS3(
-      req.files,
-      req.userinfo
-    );
+    // multer-s3는 자동으로 S3에 업로드하고 각 파일의 location을 제공
+    const imageUrls = req.files.map((file) => file.location);
 
     res.status(200).json({
       success: true,
