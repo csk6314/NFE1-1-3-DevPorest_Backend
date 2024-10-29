@@ -426,26 +426,44 @@ const getUserPortfolios = async (req, res) => {
 
     // 해당 유저가 생성한 포트폴리오 수 조회
     const totalCount = await Portfolio.countDocuments({ userID: userid });
-
-    // 페이지네이션이 적용된 포트폴리오 목록 조회
-    const portfolios = await Portfolio.find({ userID: userid })
-      .sort({ createdAt: -1 })
-      .select("-__v")
-      .skip(skip)
-      .limit(limit);
+    console.log("totalCount:", totalCount);
 
     // Like와 join하여 해당 포트폴리오의 좋아요 수 계산
-    const portfoliosWithLikes = await Promise.all(
-      portfolios.map(async (portfolio) => {
-        const likeCount = await Like.countDocuments({
-          portfolioID: portfolio._id,
-        });
-        return {
-          ...portfolio.toObject(), // Mongoose 문서 객체를 일반 JavaScript 객체로 변환
-          likeCount,
-        };
-      })
-    );
+    const pipeline = [
+      { $match: { userID: userid } }, // 일치하는 userID를 가진 포트폴리오만 조회, ObjectId로 변환할 필요 X
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "portfolioID",
+          as: "likes",
+        },
+      },
+      {
+        $addFields: {
+          likeCount: { $size: "$likes" },
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          contents: 1,
+          view: 1,
+          images: 1,
+          tags: 1,
+          techStack: 1,
+          createdAt: 1,
+          thumbnailImage: 1,
+          userID: 1,
+          likeCount: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    const portfoliosWithLikes = await Portfolio.aggregate(pipeline);
 
     // 페이지네이션 메타데이터 계산
     const totalPages = Math.ceil(totalCount / limit);
