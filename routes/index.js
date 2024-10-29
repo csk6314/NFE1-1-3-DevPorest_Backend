@@ -12,7 +12,7 @@ const jobRoutes = require("./jobGroupRoute");
 router.use("/portfolios", portfolioRoutes);
 router.use("/auth", authRoutes);
 router.use("/techstacks", techStackRoutes);
-router.use("/user", userRoutes);
+router.use("/users", userRoutes);
 router.use("/job-group", jobRoutes);
 
 module.exports = router;
