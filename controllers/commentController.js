@@ -3,17 +3,9 @@ const Comment = require("../models/Comment");
 exports.getCommentsByPortfolioId = async (req, res) => {
   try {
     const { portfolioId } = req.params;
-    const { page = 1, limit = 10 } = req.query; // 기본값: 1페이지, 15개씩
-
-    // 쿼리 파라미터는 문자열로 오기때문에, 문자열을 숫자로 변환.
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    // 유효성 검사
-    if (pageNum < 1 || limitNum < 1) {
-      return res.status(400).json({
-        message: "페이지와 limit는 1 이상이어야 합니다.",
-      });
-    }
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
     // 전체 댓글 수 조회
     const totalComments = await Comment.countDocuments({
@@ -23,20 +15,26 @@ exports.getCommentsByPortfolioId = async (req, res) => {
     // 페이지네이션 적용하여 댓글 조회
     const comments = await Comment.find({ portfolioID: portfolioId }) // 주어진 포트폴리오 ID에 해당하는 댓글만 조회
       .sort({ createdAt: -1 }) // 최신 댓글이 먼저 오도록 내림차순 정렬
-      .skip((pageNum - 1) * limitNum) // 불러올 댓글의 시작 지점을 설정. 해당 페이지에 해당하는 댓글만 조회하도록 함.
-      .limit(limitNum) // 한 번에 가져올 최대 댓글 수 제한
+      .skip(skip) // 불러올 댓글의 시작 지점을 설정. 해당 페이지에 해당하는 댓글만 조회하도록 함.
+      .limit(limit) // 한 번에 가져올 최대 댓글 수 제한
       .exec(); // 쿼리를 실행하고 결과를 반환
 
-    // 전체 페이지 수 계산
-    const totalPages = Math.ceil(totalComments / limitNum);
+    // 페이지네이션 메타데이터 계산
+    const totalPages = Math.ceil(totalComments / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
-    res.json({
-      comments,
-      currentPage: pageNum,
-      totalPages,
-      totalComments,
-      hasNextPage: pageNum < totalPages, // 마지막 페이지인지 확인하기에 용이
-      hasPrevPage: pageNum > 1,
+    res.status(200).json({
+      success: true,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalComments,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
+      data: comments,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -12,17 +12,17 @@ const getAllPortfolios = async (req, res) => {
     // 전체 포트폴리오 수 조회
     const totalCount = await Portfolio.countDocuments();
 
-    // 페이지네이션이 적용된 포트폴리오 조회
+    // 페이지네이션이 적용된 포트폴리오(약칭 포폴) 조회
     const portfolios = await Portfolio.find()
       .sort({ createdAt: -1 }) // 최신순 정렬
       .select("-__v") // __v 필드 제외
-      .skip(skip)
-      .limit(limit);
+      .skip(skip) // 불러올 포폴의 시작 지점을 설정. 해당 페이지에 해당하는 포폴만 조회하도록 함.
+      .limit(limit); // 한 번에 가져올 최대 포폴 수 제한
 
     /*
      * 추가적인 DetailData 삽입
      * 일단 likeCount만 추가
-     * CommentCount 추가 해야함
+     * 조회수 추가 해야함
      **/
     const portfoliosWithDetails = await Promise.all(
       portfolios.map(async (portfolio) => {
