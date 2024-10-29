@@ -57,7 +57,7 @@ const getUserInfo = async (req, res) => {
     if (user.length < 1) {
       return res
         .status(404)
-        .json({ success: false, error: "사용자정보를 찾을 수 없어요" });
+        .json({ success: false, error: "해당 ID의 유저를 찾을 수 없습니다." });
     }
 
     res.json({
