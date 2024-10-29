@@ -35,9 +35,6 @@ module.exports = router;
  *         textColor:
  *           type: string
  *           description: 기술스택 태그 글자 색상
- *         useNum:
- *           type: number
- *           description: 사용 횟수
  *         jobCode:
  *           type: string
  *           description: 직군 코드
