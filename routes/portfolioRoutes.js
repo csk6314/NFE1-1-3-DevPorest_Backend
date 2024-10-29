@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const portfolioController = require("../controllers/portfolioController.js");
 const auth = require("../middleware/auth");
+const upload = require("../middleware/upload");
 
 // 전체 조회는 인증이 필요없으므로 미들웨어 적용하지 않음
 router.get("/", portfolioController.getAllPortfolios); // GET /api/portfolios
@@ -11,6 +12,18 @@ router.get("/:id", portfolioController.getPortfolioById); // GET /api/portfolios
 router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfolios
 router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
 router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
+router.post(
+  "/upload",
+  auth,
+  upload.single("image"),
+  portfolioController.uploadSingleImage
+);
+router.post(
+  "/uploads",
+  auth,
+  upload.array("images", 5),
+  portfolioController.uploadMultipleImages
+);
 
 // GET /api/portfolios/search/:type/:keyword
 router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
@@ -452,4 +465,106 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: "포트폴리오 검색에 실패했습니다."
+ */
+/**
+ * @swagger
+ * /api/portfolios/upload:
+ *   post:
+ *     summary: 단일 이미지 업로드 (인증 필요)
+ *     description: |
+ *       단일 이미지 파일을 AWS S3에 업로드합니다.
+ *       - 지원 형식: jpeg, jpg, png, gif
+ *       - 최대 파일 크기: 5MB
+ *       - 인증된 사용자만 사용 가능
+ *     tags: [Portfolios]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: 업로드할 이미지 파일
+ *     responses:
+ *       200:
+ *         description: 이미지 업로드 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                       description: 업로드된 이미지의 S3 URL
+ *       400:
+ *         description: 잘못된 요청 (이미지 없음 또는 잘못된 형식)
+ *       401:
+ *         description: 인증 실패
+ *       500:
+ *         description: 서버 에러
+ */
+
+/**
+ * @swagger
+ * /api/portfolios/uploads:
+ *   post:
+ *     summary: 다중 이미지 업로드 (인증 필요)
+ *     description: |
+ *       최대 5개의 이미지 파일을 AWS S3에 업로드합니다.
+ *       - 지원 형식: jpeg, jpg, png, gif
+ *       - 파일당 최대 크기: 5MB
+ *       - 최대 업로드 개수: 5개
+ *       - 인증된 사용자만 사용 가능
+ *     tags: [Portfolios]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: 업로드할 이미지 파일들
+ *     responses:
+ *       200:
+ *         description: 이미지 업로드 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     urls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: 업로드된 이미지들의 S3 URL 배열
+ *       400:
+ *         description: 잘못된 요청 (이미지 없음, 잘못된 형식 또는 개수 초과)
+ *       401:
+ *         description: 인증 실패
+ *       500:
+ *         description: 서버 에러
  */

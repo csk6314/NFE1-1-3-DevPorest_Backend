@@ -1,5 +1,6 @@
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
+const fileHandler = require("../utils/fileHandler");
 
 // 포트폴리오 목록 조회
 const getAllPortfolios = async (req, res) => {
@@ -305,6 +306,59 @@ const searchPortfolios = async (req, res) => {
   }
 };
 
+const uploadSingleImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "이미지 파일이 없습니다.",
+      });
+    }
+
+    const imageUrl = await fileHandler.uploadFileToS3(req.file, req.userinfo);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        url: imageUrl,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "이미지 업로드에 실패했습니다.",
+    });
+  }
+};
+
+const uploadMultipleImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "이미지 파일이 없습니다.",
+      });
+    }
+
+    const imageUrls = await fileHandler.uploadMultipleFilesToS3(
+      req.files,
+      req.userinfo
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        urls: imageUrls,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "이미지 업로드에 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
@@ -312,4 +366,6 @@ module.exports = {
   deletePortfolio,
   getPortfolioById,
   searchPortfolios,
+  uploadSingleImage,
+  uploadMultipleImages,
 };
