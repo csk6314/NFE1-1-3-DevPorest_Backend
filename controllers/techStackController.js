@@ -41,7 +41,7 @@ const getAllTechStacks = async (req, res) => {
 
 const getTechStackStatistic = async (req, res) => {
   try {
-    const techStack = await TechStack.aggregate([
+    let pipelines = [
       {
         $lookup: {
           from: "portfolios",
@@ -65,7 +65,20 @@ const getTechStackStatistic = async (req, res) => {
           total_count: -1,
         },
       },
-    ]);
+    ];
+
+    if (req.query.jobcode) {
+      pipelines = [
+        {
+          $match: {
+            jobCode: new mongoose.Types.ObjectId(req.query.jobcode + ""),
+          },
+        },
+        ...pipelines,
+      ];
+    }
+
+    const techStack = await TechStack.aggregate([pipelines]);
 
     res.status(200).json({
       success: true,
