@@ -7,15 +7,14 @@ const auth = require("../middleware/auth");
 router.get("/", portfolioController.getAllPortfolios); // GET /api/portfolios
 router.get("/:id", portfolioController.getPortfolioById); // GET /api/portfolios/:id
 
-// 생성, 수정, 삭제는 인증된 사용자만 가능하도록 auth 미들웨어 적용
+// 생성, 수정, 삭제는 인증된 사용자만 가능하도록 auth 미들웨어 적용 + 좋아요
 router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfolios
 router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
 router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
+router.post("/:id/like", auth, portfolioController.toggleLike);
 
 // GET /api/portfolios/search/:type/:keyword
 router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
-
-router.post("/:id/like", auth, portfolioController.toggleLike);
 
 module.exports = router;
 
