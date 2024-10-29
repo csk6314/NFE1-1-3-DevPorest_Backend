@@ -15,10 +15,6 @@ const techStackSchema = new Schema({
     type: String,
     default: "#FFFFFF",
   },
-  useNum: {
-    type: Number,
-    default: 0,
-  },
   jobCode: {
     type: Schema.Types.ObjectId,
     ref: "JobGroup",
