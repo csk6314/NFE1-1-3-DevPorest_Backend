@@ -98,14 +98,32 @@ const createPortfolio = async (req, res) => {
     const {
       title,
       contents,
-      images,
+      images, // S3 URL 배열
       tags,
       techStack,
       jobGroup,
-      thumbnailImage,
+      thumbnailImage, // S3 URL
     } = req.body;
 
     const userID = req.userinfo.id;
+
+    // URL 유효성 검사 (선택사항)
+    const validateUrl = (url) => {
+      return (
+        url.startsWith("https://") && url.includes(process.env.AWS_S3_BUCKET)
+      );
+    };
+
+    if (thumbnailImage && !validateUrl(thumbnailImage)) {
+      throw new Error("유효하지 않은 썸네일 이미지 URL입니다.");
+    }
+
+    if (images && Array.isArray(images)) {
+      const invalidUrls = images.filter((url) => !validateUrl(url));
+      if (invalidUrls.length > 0) {
+        throw new Error("유효하지 않은 이미지 URL이 포함되어 있습니다.");
+      }
+    }
 
     const portfolio = new Portfolio({
       title,
@@ -347,6 +365,58 @@ const searchPortfolios = async (req, res) => {
   }
 };
 
+const uploadSingleImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "이미지 파일이 없습니다.",
+      });
+    }
+
+    // multer-s3는 자동으로 S3에 업로드하고 location을 제공
+    const imageUrl = req.file.location;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        url: imageUrl,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "이미지 업로드에 실패했습니다.",
+    });
+  }
+};
+
+const uploadMultipleImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "이미지 파일이 없습니다.",
+      });
+    }
+
+    // multer-s3는 자동으로 S3에 업로드하고 각 파일의 location을 제공
+    const imageUrls = req.files.map((file) => file.location);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        urls: imageUrls,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "이미지 업로드에 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
@@ -355,4 +425,6 @@ module.exports = {
   getPortfolioById,
   toggleLike,
   searchPortfolios,
+  uploadSingleImage,
+  uploadMultipleImages,
 };

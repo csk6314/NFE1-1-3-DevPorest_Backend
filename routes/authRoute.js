@@ -66,4 +66,6 @@ router.get("/github/callback", authController.getGithubCallback);
  */
 router.get("/logout", authController.logout);
 
+router.get("/mock-login", authController.getMockToken); // 프론트엔드 테스트용 api
+
 module.exports = router;
