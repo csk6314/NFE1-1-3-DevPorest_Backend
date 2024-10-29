@@ -9,6 +9,8 @@ const auth = require("../middleware/auth");
 
 router.get("user/:userid", userController.getUserInfo);
 
+router.get("/popular", userController.getPopularUserProfile);
+
 router.post("/", auth, userController.registerUserProfile);
 
 router.put("/", auth, userController.modifyUserProfile);
