@@ -93,22 +93,12 @@ module.exports = router;
  *                     - $ref: '#/components/schemas/User'
  *                     - type: object
  *                       properties:
- *                         likeCount:
+ *                         total_like:
  *                           type: number
  *                           example: 0
- *       400:
- *         description: 잘못된 요청
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: string
- *                   example: 유효하지 않은 유저 ID입니다.
+ *                         createdAt:
+ *                           type: Date
+ *                           example: "date"
  *       404:
  *         description: 유저를 찾을 수 없음
  *         content:
@@ -122,6 +112,19 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: 해당 ID의 유저를 찾을 수 없습니다.
+ *       500:
+ *         description: 유저를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 서버 에러
  */
 
 /**

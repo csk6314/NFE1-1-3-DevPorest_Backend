@@ -1,4 +1,3 @@
-const Like = require("../models/Like");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 
@@ -6,26 +5,66 @@ const getUserInfo = async (req, res) => {
   const { userid } = req.params;
 
   try {
-    const userDoc = await User.findOne({ userID: userid });
+    const user = await User.aggregate([
+      { $match: { userID: userid } },
+      {
+        $lookup: {
+          // 유저의 portfolio와 join
+          from: "portfolios",
+          localField: "userID",
+          foreignField: "userID",
+          as: "user_portfolios",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          // 각 유저 포트폴리오와 like join
+          from: "likes",
+          localField: "user_portfolios._id",
+          foreignField: "portfolioID",
+          as: "post_likes",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          total_like: { $size: "$post_likes" },
+        },
+      },
+      {
+        $project: {
+          user_portfolios: 0,
+          post_likes: 0,
+          __v: 0,
+        },
+      },
+    ]);
 
-    if (!userDoc) {
-      return res.status(404).json({ message: "사용자정보를 찾을 수 없어요" });
+    if (user.length < 1) {
+      return res
+        .status(404)
+        .json({ success: false, error: "해당 ID의 유저를 찾을 수 없습니다." });
     }
-
-    /* 포트폴리오 가져오는 코드 추가해야 함 **/
-
-    /* 총 좋아요 수 가져오기 **/
-    const likeCount = await Like.countDocuments({ userID: userid });
 
     res.json({
       success: true,
-      data: {
-        ...userDoc.toObject(),
-        likeCount,
-      },
+      data: user[0],
     });
   } catch (err) {
-    res.status(500).json({ message: "서버에러" });
+    res.status(500).json({ success: false, error: "서버에러" });
   }
 };
 
@@ -119,6 +158,13 @@ const getPopularUserProfile = async (req, res) => {
           localField: "userID",
           foreignField: "userID",
           as: "user_portfolios",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
         },
       },
       {
@@ -131,6 +177,13 @@ const getPopularUserProfile = async (req, res) => {
           localField: "user_portfolios._id",
           foreignField: "portfolioID",
           as: "post_likes",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
         },
       },
       {
