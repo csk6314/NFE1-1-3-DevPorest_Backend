@@ -8,7 +8,7 @@ const upload = require("../middleware/upload");
 router.get("/", portfolioController.getAllPortfolios); // GET /api/portfolios
 router.get("/:id", portfolioController.getPortfolioById); // GET /api/portfolios/:id
 
-// 생성, 수정, 삭제는 인증된 사용자만 가능하도록 auth 미들웨어 적용
+// 생성, 수정, 삭제는 인증된 사용자만 가능하도록 auth 미들웨어 적용 + 좋아요
 router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfolios
 router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
 router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
@@ -24,6 +24,7 @@ router.post(
   upload.array("images", 5),
   portfolioController.uploadMultipleImages
 );
+router.post("/:id/like", auth, portfolioController.toggleLike);
 
 // GET /api/portfolios/search/:type/:keyword
 router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
@@ -103,7 +104,13 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       500:
  *         description: 서버 에러
  *         content:
@@ -144,7 +151,16 @@ module.exports = router;
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   $ref: '#/components/schemas/Portfolio'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         like:
+ *                           type: boolean
+ *                           example: false
+ *                         likeCount:
+ *                           type: number
+ *                           example: 0
  *       400:
  *         description: 잘못된 요청
  *         content:
@@ -468,6 +484,37 @@ module.exports = router;
  */
 /**
  * @swagger
+ * /api/portfolios/{id}/like:
+ *   post:
+ *     summary: 포트폴리오 좋아요 (토글)
+ *     tags: [Portfolios]
+ *     responses:
+ *       201:
+ *         description: 포트폴리오 좋아요 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 like:
+ *                   type: boolean
+ *                   example: true
+ *                 likeCount:
+ *                   type: number
+ *                   example: 0
+ *       500:
+ *         description: Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 서버 에러
+ */
+/**
+ * @swagger
  * /api/portfolios/upload:
  *   post:
  *     summary: 단일 이미지 업로드 (인증 필요)
@@ -567,4 +614,3 @@ module.exports = router;
  *         description: 인증 실패
  *       500:
  *         description: 서버 에러
- */

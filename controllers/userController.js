@@ -1,3 +1,4 @@
+const Like = require("../models/Like");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 
@@ -13,7 +14,16 @@ const getUserInfo = async (req, res) => {
 
     /* 포트폴리오 가져오는 코드 추가해야 함 **/
 
-    res.json(userDoc);
+    /* 총 좋아요 수 가져오기 **/
+    const likeCount = await Like.countDocuments({ userID: userid });
+
+    res.json({
+      success: true,
+      data: {
+        ...userDoc.toObject(),
+        likeCount,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: "서버에러" });
   }
