@@ -203,3 +203,63 @@ module.exports = router;
  *                   type: string
  *                   example: 유저 프로필 수정에 실패했습니다.
  */
+
+/**
+ * @swagger
+ * /api/users/popular:
+ *   get:
+ *     summary: 인기 유저 프로필 조회
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: 인기 유저 프로필 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: string
+ *                       name:
+ *                         type: string
+ *                         example: string
+ *                       jobGroup:
+ *                         type: string
+ *                         example: string
+ *                       profileImage:
+ *                         type: string
+ *                         example: string
+ *                       intro:
+ *                         type: string
+ *                         example: string
+ *                       techStack:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                           example: React
+ *                       total_likes:
+ *                         type: number
+ *                         example: 0
+ *       500:
+ *         description: 인기 유저 정보 조회 실패
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 인기 유저 정보를 가져오는데 실패했습니다.
+ */
