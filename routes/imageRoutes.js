@@ -134,13 +134,6 @@ module.exports = router;
  *               success: false
  *               error: "이미지 업로드에 실패했습니다."
  */
-router.post(
-  "/upload",
-  auth,
-  upload.single("image"),
-  uploadController.uploadSingleImage
-);
-
 /**
  * @swagger
  * /api/images/uploads:
