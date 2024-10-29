@@ -7,7 +7,7 @@ const userController = require("../controllers/userController");
 //middleware
 const auth = require("../middleware/auth");
 
-router.get("user/:userid", userController.getUserInfo);
+router.get("/user/:userid", userController.getUserInfo);
 
 router.get("/popular", userController.getPopularUserProfile);
 
