@@ -614,3 +614,4 @@ module.exports = router;
  *         description: 인증 실패
  *       500:
  *         description: 서버 에러
+ */
