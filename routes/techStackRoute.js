@@ -120,6 +120,13 @@ module.exports = router;
  *   get:
  *     summary: 전체 기술스택 조회
  *     tags: [TechStack]
+ *     parameters:
+ *       - in: query
+ *         name: jobcode
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: 직무 코드(ID) (24자리 16진수 ObjectId)
  *     responses:
  *       200:
  *         description: 기술스택 목록 조회 성공
@@ -138,6 +145,9 @@ module.exports = router;
  *                     - $ref: '#/components/schemas/TechStack'
  *                     - type: object
  *                     - properties:
+ *                         _id:
+ *                           type: string
+ *                           example: 0
  *                         total_count:
  *                           type: number
  *                           example: 0
