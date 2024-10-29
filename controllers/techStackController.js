@@ -1,3 +1,4 @@
+const Portfolio = require("../models/Portfolio");
 const TechStack = require("../models/TechStack");
 const mongoose = require("mongoose");
 
@@ -38,7 +39,48 @@ const getAllTechStacks = async (req, res) => {
   }
 };
 
+const getTechStackStatistic = async (req, res) => {
+  try {
+    const techStack = await TechStack.aggregate([
+      {
+        $lookup: {
+          from: "portfolios",
+          localField: "skill",
+          foreignField: "techStack",
+          as: "portfolios",
+        },
+      },
+      {
+        $addFields: {
+          total_count: { $size: "$portfolios" },
+        },
+      },
+      {
+        $project: {
+          portfolios: 0,
+        },
+      },
+      {
+        $sort: {
+          total_count: -1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: techStack,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "기술스택 통계를 가져오는데 실패했습니다.",
+    });
+  }
+};
+
 module.exports = {
   createTechStack,
   getAllTechStacks,
+  getTechStackStatistic,
 };

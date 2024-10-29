@@ -4,6 +4,7 @@ const router = express.Router();
 const techStackController = require("../controllers/techStackController");
 
 router.get("/", techStackController.getAllTechStacks);
+router.get("/statistic", techStackController.getTechStackStatistic);
 
 router.post("/", techStackController.createTechStack);
 
