@@ -85,8 +85,24 @@ module.exports = router;
  * @swagger
  * /api/portfolios:
  *   get:
- *     summary: 전체 포트폴리오 조회
+ *     summary: 전체 포트폴리오 조회 (페이지네이션)
  *     tags: [Portfolios]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 조회할 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 15
+ *         description: 한 페이지당 포트폴리오 수
  *     responses:
  *       200:
  *         description: 포트폴리오 목록 조회 성공
@@ -98,19 +114,37 @@ module.exports = router;
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 count:
- *                   type: number
- *                   description: 전체 포트폴리오 수
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 42
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       example: true
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                       example: false
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
  *                 data:
  *                   type: array
  *                   items:
  *                     allOf:
- *                     - $ref: '#/components/schemas/Portfolio'
- *                     - type: object
- *                       properties:
- *                         likeCount:
- *                           type: number
- *                           example: 0
+ *                       - $ref: '#/components/schemas/Portfolio'
+ *                       - type: object
+ *                         properties:
+ *                           likeCount:
+ *                             type: number
+ *                             example: 0
  *       500:
  *         description: 서버 에러
  *         content:

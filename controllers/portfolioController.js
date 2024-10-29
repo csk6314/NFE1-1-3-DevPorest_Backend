@@ -5,9 +5,19 @@ const mongoose = require("mongoose");
 // 포트폴리오 목록 조회
 const getAllPortfolios = async (req, res) => {
   try {
+    const page = parseInt(req.query.page, 10) || 1; // 기본값 1
+    const limit = parseInt(req.query.limit, 15) || 15; // 기본값 15
+    const skip = (page - 1) * limit;
+
+    // 전체 포트폴리오 수 조회
+    const totalCount = await Portfolio.countDocuments();
+
+    // 페이지네이션이 적용된 포트폴리오 조회
     const portfolios = await Portfolio.find()
       .sort({ createdAt: -1 }) // 최신순 정렬
-      .select("-__v"); // __v 필드 제외하고 클라이언트에 보여줌
+      .select("-__v") // __v 필드 제외
+      .skip(skip)
+      .limit(limit);
 
     /*
      * 추가적인 DetailData 삽입
@@ -26,9 +36,21 @@ const getAllPortfolios = async (req, res) => {
       })
     );
 
+    // 페이지네이션 메타데이터 계산
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
     res.status(200).json({
       success: true,
-      count: portfolios.length,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
       data: portfoliosWithDetails,
     });
   } catch (error) {
