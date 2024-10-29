@@ -18,10 +18,33 @@ module.exports = router;
  * tags:
  *   name: Comment
  *   description: 댓글 관리 API
- *
+ */
+/**
  * @swagger
  * components:
  *   schemas:
+ *     CommentResponse:
+ *       type: object
+ *       properties:
+ *         comments:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Comment'
+ *         currentPage:
+ *           type: integer
+ *           description: 현재 페이지 번호
+ *         totalPages:
+ *           type: integer
+ *           description: 전체 페이지 수
+ *         totalComments:
+ *           type: integer
+ *           description: 전체 댓글 수
+ *         hasNextPage:
+ *           type: boolean
+ *           description: 다음 페이지 존재 여부
+ *         hasPrevPage:
+ *           type: boolean
+ *           description: 이전 페이지 존재 여부
  *     Comment:
  *       type: object
  *       properties:
@@ -54,7 +77,7 @@ module.exports = router;
  * @swagger
  * /api/comments/{portfolioId}:
  *   get:
- *     summary: 포트폴리오의 댓글 조회
+ *     summary: 포트폴리오의 댓글 조회 (페이지네이션)
  *     tags: [Comment]
  *     parameters:
  *       - in: path
@@ -62,16 +85,42 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: string
+ *         description: 포트폴리오 ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *         description: 페이지당 댓글 수
  *     responses:
  *       200:
  *         description: 성공적인 응답
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Comment'
- *
+ *               $ref: '#/components/schemas/CommentResponse'
+ *       400:
+ *         description: 잘못된 요청 (페이지 번호나 limit가 유효하지 않음)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: 서버 에러
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
  * @swagger
  * /api/comments/{portfolioId}:
  *   post:
@@ -104,7 +153,8 @@ module.exports = router;
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *
+ */
+/**
  * @swagger
  * components:
  *   securitySchemes:
