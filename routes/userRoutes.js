@@ -93,7 +93,20 @@ module.exports = router;
  *                     - $ref: '#/components/schemas/User'
  *                     - type: object
  *                       properties:
- *                         total_like:
+ *                         techStack:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - type: object
+ *                                 properties:
+ *                               - $ref: '#/components/schemas/TechStack'
+ *                         jobGroup:
+ *                           type: object
+ *                           properties:
+ *                               job:
+ *                                 type: string
+ *                                 example: string
+ *                         total_likes:
  *                           type: number
  *                           example: 0
  *                         createdAt:
@@ -229,15 +242,18 @@ module.exports = router;
  *                   items:
  *                     type: object
  *                     properties:
- *                       _id:
+ *                       userID:
  *                         type: string
  *                         example: string
  *                       name:
  *                         type: string
  *                         example: string
  *                       jobGroup:
- *                         type: string
- *                         example: string
+ *                         type: object
+ *                         properties:
+ *                             job:
+ *                               type: string
+ *                               example: string
  *                       profileImage:
  *                         type: string
  *                         example: string
@@ -247,8 +263,7 @@ module.exports = router;
  *                       techStack:
  *                         type: array
  *                         items:
- *                           type: string
- *                           example: React
+ *                             $ref: '#/components/schemas/TechStack'
  *                       total_likes:
  *                         type: number
  *                         example: 0

@@ -41,7 +41,7 @@ const getUserInfo = async (req, res) => {
       },
       {
         $addFields: {
-          total_like: { $size: "$post_likes" },
+          total_likes: { $size: "$post_likes" },
         },
       },
       {
@@ -49,7 +49,43 @@ const getUserInfo = async (req, res) => {
           user_portfolios: 0,
           post_likes: 0,
           __v: 0,
+          _id: 0,
         },
+      },
+      {
+        $lookup: {
+          from: "techstacks",
+          localField: "techStack",
+          foreignField: "skill",
+          as: "techStack",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "jobgroups",
+          localField: "jobGroup",
+          foreignField: "_id",
+          as: "jobGroup",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$jobGroup",
       },
     ]);
 
@@ -196,12 +232,53 @@ const getPopularUserProfile = async (req, res) => {
         $group: {
           // userID로 그룹화, totalLikes = 총 좋아요 수
           _id: "$userID",
+          userID: { $first: "$userID" },
           name: { $first: "$name" },
           jobGroup: { $first: "$jobGroup" },
           profileImage: { $first: "$profileImage" },
           intro: { $first: "$intro" },
           techStack: { $first: "$techStack" },
           total_likes: { $sum: "$like_count" },
+        },
+      },
+      {
+        $lookup: {
+          from: "techstacks",
+          localField: "techStack",
+          foreignField: "skill",
+          as: "techStack",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "jobgroups",
+          localField: "jobGroup",
+          foreignField: "_id",
+          as: "jobGroup",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$jobGroup",
+      },
+      {
+        $project: {
+          _id: 0,
         },
       },
       {
