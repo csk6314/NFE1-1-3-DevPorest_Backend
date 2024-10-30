@@ -77,10 +77,13 @@ const getPortfolioById = async (req, res) => {
       });
     }
 
-    // express-session은 이미 자동으로 고유한 세션 ID를 생성함. 공공 wifi 등에서도 사용자 식별 가능
-    const userSession = req.session || { viewedPortfolios: {} };
+    // 세션 초기화를 명시적으로 수행
+    if (!req.session.viewedPortfolios) {
+      req.session.viewedPortfolios = {};
+    }
 
-    const portfolio = await incrementViewCount(id, userSession, session);
+    // 실제 세션 객체 전달
+    const portfolio = await incrementViewCount(id, req.session, session);
 
     if (!portfolio) {
       await session.abortTransaction();
