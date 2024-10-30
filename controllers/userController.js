@@ -49,6 +49,7 @@ const getUserInfo = async (req, res) => {
           user_portfolios: 0,
           post_likes: 0,
           __v: 0,
+          _id: 0,
         },
       },
       {
@@ -61,10 +62,30 @@ const getUserInfo = async (req, res) => {
             {
               $project: {
                 __v: 0,
+                _id: 0,
               },
             },
           ],
         },
+      },
+      {
+        $lookup: {
+          from: "jobgroups",
+          localField: "jobGroup",
+          foreignField: "_id",
+          as: "jobGroup",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$jobGroup",
       },
     ]);
 
@@ -230,10 +251,30 @@ const getPopularUserProfile = async (req, res) => {
             {
               $project: {
                 __v: 0,
+                _id: 0,
               },
             },
           ],
         },
+      },
+      {
+        $lookup: {
+          from: "jobgroups",
+          localField: "jobGroup",
+          foreignField: "_id",
+          as: "jobGroup",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+                _id: 0,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$jobGroup",
       },
       {
         $project: {
