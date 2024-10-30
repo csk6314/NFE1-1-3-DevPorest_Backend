@@ -426,7 +426,6 @@ const getUserPortfolios = async (req, res) => {
 
     // 해당 유저가 생성한 포트폴리오 수 조회
     const totalCount = await Portfolio.countDocuments({ userID: userid });
-    console.log("totalCount:", totalCount);
 
     // Like와 join하여 해당 포트폴리오의 좋아요 수 계산
     const pipeline = [
