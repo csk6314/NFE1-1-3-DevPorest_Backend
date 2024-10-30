@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const getAllPortfolios = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1; // 기본값 1
-    const limit = parseInt(req.query.limit, 15) || 15; // 기본값 15
+    const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
     const skip = (page - 1) * limit;
 
     // 전체 포트폴리오 수 조회
