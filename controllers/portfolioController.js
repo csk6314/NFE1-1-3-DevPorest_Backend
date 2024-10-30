@@ -274,7 +274,7 @@ const toggleLike = async (req, res) => {
   const { id: userID } = req.userinfo;
 
   try {
-    const likeCount = (await Like.find({ portfolioID })).length;
+    const likeCount = await Like.countDocuments({ portfolioID });
     const like = await Like.findOne({ portfolioID, userID });
 
     //좋아요 없는 경우 => 좋아요 생성
