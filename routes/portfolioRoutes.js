@@ -32,6 +32,9 @@ router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
 // GET /api/portfolios/user/:userid
 router.get("/user/:userid", portfolioController.getUserPortfolios);
 
+// GET /api/portfolios/like/:userid
+router.get("/like/:userid", portfolioController.getUserLikePortfolios);
+
 module.exports = router;
 
 /**
