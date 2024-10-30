@@ -564,7 +564,7 @@ module.exports = router;
  *     tags: [Portfolios]
  *     parameters:
  *       - in: path
- *         name: portfolioID
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
