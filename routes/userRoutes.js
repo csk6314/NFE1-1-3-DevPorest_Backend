@@ -99,10 +99,13 @@ module.exports = router;
  *                             allOf:
  *                               - type: object
  *                                 properties:
- *                                   _id:
- *                                     type: string
- *                                     example: string
  *                               - $ref: '#/components/schemas/TechStack'
+ *                         jobGroup:
+ *                           type: object
+ *                           properties:
+ *                               job:
+ *                                 type: string
+ *                                 example: string
  *                         total_likes:
  *                           type: number
  *                           example: 0
@@ -246,8 +249,11 @@ module.exports = router;
  *                         type: string
  *                         example: string
  *                       jobGroup:
- *                         type: string
- *                         example: string
+ *                         type: object
+ *                         properties:
+ *                             job:
+ *                               type: string
+ *                               example: string
  *                       profileImage:
  *                         type: string
  *                         example: string
@@ -257,13 +263,7 @@ module.exports = router;
  *                       techStack:
  *                         type: array
  *                         items:
- *                           allOf:
- *                             - type: object
- *                               properties:
- *                                 _id:
- *                                   type: string
- *                                   example: string
- *                             - $ref: '#/components/schemas/TechStack'
+ *                             $ref: '#/components/schemas/TechStack'
  *                       total_likes:
  *                         type: number
  *                         example: 0
