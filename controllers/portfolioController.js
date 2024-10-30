@@ -77,7 +77,7 @@ const getPortfolioById = async (req, res) => {
       });
     }
 
-    // req.session이 없는 경우 (비로그인 사용자) 임시 세션 생성
+    // 사용자의 req.session이 없는 경우 임시 세션 생성
     const userSession = req.session || {
       viewedPortfolios: {},
       id: req.ip, // IP를 세션 ID로 사용
