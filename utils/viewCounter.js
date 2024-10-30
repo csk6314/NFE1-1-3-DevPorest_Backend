@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Portfolio = require("../models/Portfolio");
 
 /**
- * 포트폴리오 조회수 증가 함수 파라미터 설명
+ * 포트폴리오 조회수 증가 함수
  * @param {string} portfolioId - 포트폴리오 ID
  * @param {Object} session - 사용자 세션 객체
  * @param {Object} mongoSession - MongoDB 세션 객체 (트랜잭션용)
@@ -19,8 +19,9 @@ const incrementViewCount = async (
       session.viewedPortfolios = {};
     }
 
+    const viewKey = portfolioId;
     // 현재 시간과 마지막 조회 시간을 비교 (24시간 기준)
-    const lastViewTime = session.viewedPortfolios[portfolioId];
+    const lastViewTime = session.viewedPortfolios[viewKey];
     const currentTime = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000; // 24시간을 밀리초로 표현
 
@@ -40,8 +41,7 @@ const incrementViewCount = async (
       }
 
       // 세션에 현재 시간 기록
-      session.viewedPortfolios[portfolioId] = currentTime;
-
+      session.viewedPortfolios[viewKey] = currentTime;
       return updatedPortfolio;
     }
 
