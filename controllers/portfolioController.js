@@ -1,3 +1,4 @@
+const { incrementViewCount } = require("../utils/viewCounter");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
@@ -63,6 +64,8 @@ const getAllPortfolios = async (req, res) => {
 
 // 포트폴리오 상세 조회
 const getPortfolioById = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { id } = req.params;
 
@@ -74,9 +77,16 @@ const getPortfolioById = async (req, res) => {
       });
     }
 
-    const portfolio = await Portfolio.findById(id).select("-__v");
+    // 사용자의 req.session이 없는 경우 임시 세션 생성
+    const userSession = req.session || {
+      viewedPortfolios: {},
+      id: req.ip, // IP를 세션 ID로 사용
+    };
+
+    const portfolio = await incrementViewCount(id, userSession, session);
 
     if (!portfolio) {
+      await session.abortTransaction();
       return res.status(404).json({
         success: false,
         error: "해당 ID의 포트폴리오를 찾을 수 없습니다.",
@@ -98,6 +108,8 @@ const getPortfolioById = async (req, res) => {
       }
     }
 
+    await session.commitTransaction();
+
     res.status(200).json({
       success: true,
       data: {
@@ -107,10 +119,13 @@ const getPortfolioById = async (req, res) => {
       },
     });
   } catch (error) {
+    await session.abortTransaction();
     res.status(400).json({
       success: false,
       error: error.message || "포트폴리오 조회에 실패했습니다.",
     });
+  } finally {
+    session.endSession();
   }
 };
 

@@ -6,6 +6,8 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
+const MongoStore = require("connect-mongo");
+const session = require("express-session");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -40,6 +42,22 @@ app.use(
 app.use(express.json()); // JSON 파싱
 app.use(cookieParser()); // 쿠키 파싱
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs)); // Swagger UI를 /api-docs 경로에 라우팅
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      ttl: 24 * 60 * 60, // 세션 유효기간 1일
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // HTTPS (보안 연결)에서만 쿠키가 전송됨
+      maxAge: 24 * 60 * 60 * 1000, // 24시간
+    },
+  })
+);
 
 // 기본 라우트 설정
 app.get("/", (req, res) => {

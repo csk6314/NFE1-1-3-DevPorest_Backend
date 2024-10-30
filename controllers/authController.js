@@ -146,7 +146,6 @@ const logout = (req, res) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     path: "/",
-    expires: new Date(0),
   });
   res.json("로그아웃 되었습니다.");
 };
