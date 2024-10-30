@@ -274,7 +274,7 @@ const toggleLike = async (req, res) => {
   const { id: userID } = req.userinfo;
 
   try {
-    const likeCount = (await Like.find({ portfolioID })).length;
+    const likeCount = await Like.countDocuments({ portfolioID });
     const like = await Like.findOne({ portfolioID, userID });
 
     //좋아요 없는 경우 => 좋아요 생성
@@ -532,6 +532,104 @@ const getUserPortfolios = async (req, res) => {
   }
 };
 
+const getUserLikePortfolios = async (req, res) => {
+  try {
+    const { userid } = req.params;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 15;
+    const skip = (page - 1) * limit;
+
+    const pipeline = [
+      {
+        $match: {
+          userID: userid,
+        },
+      },
+      {
+        $lookup: {
+          from: "portfolios",
+          localField: "portfolioID",
+          foreignField: "_id",
+          as: "portfolios",
+        },
+      },
+      {
+        $unwind: {
+          path: "$portfolios",
+        },
+      },
+      {
+        $project: {
+          portfolioID: 0,
+          userID: 0,
+          _id: 0,
+        },
+      },
+      {
+        $replaceRoot: {
+          // 조인한 필드를 상위로 올려서 개별 필드로 만듦
+          newRoot: { $mergeObjects: ["$portfolios", "$$ROOT"] },
+        },
+      },
+      {
+        $project: {
+          portfolios: 0,
+          __v: 0,
+        },
+      },
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "portfolioID",
+          as: "likes",
+        },
+      },
+      {
+        $addFields: {
+          like_count: {
+            $size: "$likes",
+          },
+        },
+      },
+      {
+        $project: {
+          likes: 0,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    const portfolios = await Like.aggregate(pipeline);
+
+    // 페이지네이션 메타데이터 계산
+    const totalCount = await Like.countDocuments({ userID: userid });
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return res.status(200).json({
+      success: true,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
+      data: portfolios,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "유저의 좋아요한 포트폴리오를 가져오지 못했습니다.",
+    });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
@@ -543,4 +641,5 @@ module.exports = {
   uploadSingleImage,
   uploadMultipleImages,
   getUserPortfolios,
+  getUserLikePortfolios,
 };
