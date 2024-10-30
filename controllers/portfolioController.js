@@ -1,4 +1,5 @@
 const { incrementViewCount } = require("../utils/viewCounter");
+const { generateBrowserFingerprint } = require("../utils/browserFingerprint");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
@@ -77,11 +78,8 @@ const getPortfolioById = async (req, res) => {
       });
     }
 
-    // 사용자의 req.session이 없는 경우 임시 세션 생성
-    const userSession = req.session || {
-      viewedPortfolios: {},
-      id: req.ip, // IP를 세션 ID로 사용
-    };
+    // express-session은 이미 자동으로 고유한 세션 ID를 생성함. 공공 wifi 등에서도 사용자 식별 가능
+    const userSession = req.session || { viewedPortfolios: {} };
 
     const portfolio = await incrementViewCount(id, userSession, session);
 
