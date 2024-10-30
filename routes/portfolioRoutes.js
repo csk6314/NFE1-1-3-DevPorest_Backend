@@ -562,6 +562,13 @@ module.exports = router;
  *   post:
  *     summary: 포트폴리오 좋아요 (토글)
  *     tags: [Portfolios]
+ *     parameters:
+ *       - in: path
+ *         name: portfolioID
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID
  *     responses:
  *       201:
  *         description: 포트폴리오 좋아요 성공
