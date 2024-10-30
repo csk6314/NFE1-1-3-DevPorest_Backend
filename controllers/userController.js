@@ -51,6 +51,21 @@ const getUserInfo = async (req, res) => {
           __v: 0,
         },
       },
+      {
+        $lookup: {
+          from: "techstacks",
+          localField: "techStack",
+          foreignField: "skill",
+          as: "techStack",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+              },
+            },
+          ],
+        },
+      },
     ]);
 
     if (user.length < 1) {
@@ -202,6 +217,21 @@ const getPopularUserProfile = async (req, res) => {
           intro: { $first: "$intro" },
           techStack: { $first: "$techStack" },
           total_likes: { $sum: "$like_count" },
+        },
+      },
+      {
+        $lookup: {
+          from: "techstacks",
+          localField: "techStack",
+          foreignField: "skill",
+          as: "techStack",
+          pipeline: [
+            {
+              $project: {
+                __v: 0,
+              },
+            },
+          ],
         },
       },
       {
