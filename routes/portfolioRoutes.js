@@ -85,8 +85,24 @@ module.exports = router;
  * @swagger
  * /api/portfolios:
  *   get:
- *     summary: 전체 포트폴리오 조회
+ *     summary: 전체 포트폴리오 조회 (페이지네이션)
  *     tags: [Portfolios]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 조회할 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 15
+ *         description: 한 페이지당 포트폴리오 수
  *     responses:
  *       200:
  *         description: 포트폴리오 목록 조회 성공
@@ -98,19 +114,37 @@ module.exports = router;
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 count:
- *                   type: number
- *                   description: 전체 포트폴리오 수
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 42
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       example: true
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                       example: false
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
  *                 data:
  *                   type: array
  *                   items:
  *                     allOf:
- *                     - $ref: '#/components/schemas/Portfolio'
- *                     - type: object
- *                       properties:
- *                         likeCount:
- *                           type: number
- *                           example: 0
+ *                       - $ref: '#/components/schemas/Portfolio'
+ *                       - type: object
+ *                         properties:
+ *                           likeCount:
+ *                             type: number
+ *                             example: 0
  *       500:
  *         description: 서버 에러
  *         content:
@@ -357,12 +391,13 @@ module.exports = router;
  * @swagger
  * /api/portfolios/search/{type}/{keyword}:
  *   get:
- *     summary: 포트폴리오 검색 (기술 스택, 키워드 검색 및 정렬)
+ *     summary: 포트폴리오 검색 (기술 스택, 키워드 검색 및 정렬, 페이지네이션)
  *     description: |
  *       기술 스택과 키워드를 조합하여 포트폴리오를 검색합니다.
  *       - 검색 조건이 없는 경우 전체 포트폴리오가 조회됩니다.
  *       - 검색어는 영문(대소문자 구분 없음), 한글, 공백을 포함할 수 있습니다.
  *       - 정렬은 최신순(latest) 또는 인기순(popular)으로 가능합니다.
+ *       - 페이지네이션이 적용되어 있습니다.
  *
  *       사용 예시:
  *       - 전체 검색: /search/-/-
@@ -370,6 +405,7 @@ module.exports = router;
  *       - 키워드로만 검색: /search/-/인공지능
  *       - 기술 스택 + 키워드 검색: /search/React/AI
  *       - 정렬 옵션 추가: /search/React/AI?sort=popular
+ *       - 페이지네이션: /search/React/AI?page=2&limit=10
  *     tags: [Portfolios]
  *     parameters:
  *       - in: path
@@ -399,6 +435,21 @@ module.exports = router;
  *           정렬 방식 선택
  *           - latest: 최신순 (기본값)
  *           - popular: 인기순 (좋아요 수 기준)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 조회할 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 15
+ *         description: 한 페이지당 포트폴리오 수
  *     responses:
  *       200:
  *         description: 검색 성공
@@ -410,10 +461,27 @@ module.exports = router;
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 count:
- *                   type: integer
- *                   description: 검색된 포트폴리오 수
- *                   example: 2
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 42
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       example: true
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                       example: false
+ *                     limit:
+ *                       type: integer
+ *                       example: 15
  *                 data:
  *                   type: array
  *                   items:

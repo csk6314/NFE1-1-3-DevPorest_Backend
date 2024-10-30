@@ -5,14 +5,24 @@ const mongoose = require("mongoose");
 // 포트폴리오 목록 조회
 const getAllPortfolios = async (req, res) => {
   try {
+    const page = parseInt(req.query.page, 10) || 1; // 기본값 1
+    const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
+    const skip = (page - 1) * limit;
+
+    // 전체 포트폴리오 수 조회
+    const totalCount = await Portfolio.countDocuments();
+
+    // 페이지네이션이 적용된 포트폴리오(약칭 포폴) 조회
     const portfolios = await Portfolio.find()
       .sort({ createdAt: -1 }) // 최신순 정렬
-      .select("-__v"); // __v 필드 제외하고 클라이언트에 보여줌
+      .select("-__v") // __v 필드 제외
+      .skip(skip) // 불러올 포폴의 시작 지점을 설정. 해당 페이지에 해당하는 포폴만 조회하도록 함.
+      .limit(limit); // 한 번에 가져올 최대 포폴 수 제한
 
     /*
      * 추가적인 DetailData 삽입
      * 일단 likeCount만 추가
-     * CommentCount 추가 해야함
+     * 조회수 추가 해야함
      **/
     const portfoliosWithDetails = await Promise.all(
       portfolios.map(async (portfolio) => {
@@ -26,9 +36,21 @@ const getAllPortfolios = async (req, res) => {
       })
     );
 
+    // 페이지네이션 메타데이터 계산
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
     res.status(200).json({
       success: true,
-      count: portfolios.length,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
       data: portfoliosWithDetails,
     });
   } catch (error) {
@@ -274,6 +296,9 @@ const searchPortfolios = async (req, res) => {
   try {
     const { type, keyword } = req.params;
     const { sort = "latest" } = req.query; // 정렬 옵션: 'latest' 또는 'popular'
+    const page = parseInt(req.query.page, 10) || 1; // 기본값 1
+    const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
+    const skip = (page - 1) * limit;
 
     // 타입과 키워드 처리 - 하이픈이나 공백인 경우 빈 문자열로 처리
     const searchType = type === "-" || type === " " ? "" : type;
@@ -291,6 +316,12 @@ const searchPortfolios = async (req, res) => {
     if (searchKeyword) {
       matchStage.title = new RegExp(searchKeyword, "i");
     }
+
+    // 전체 문서 수를 구하기 위한 집계 파이프라인
+    const countPipeline = [{ $match: matchStage }];
+
+    const countResult = await Portfolio.aggregate(countPipeline);
+    const totalCount = countResult.length;
 
     // Aggregation Pipeline 구성
     const pipeline = [
@@ -352,9 +383,21 @@ const searchPortfolios = async (req, res) => {
 
     const portfolios = await Portfolio.aggregate(pipeline);
 
+    // 페이지네이션 메타데이터 계산
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
     res.status(200).json({
       success: true,
-      count: portfolios.length,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
       data: portfolios,
     });
   } catch (error) {
