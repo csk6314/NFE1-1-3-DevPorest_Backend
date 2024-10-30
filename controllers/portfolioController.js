@@ -460,6 +460,78 @@ const uploadMultipleImages = async (req, res) => {
   }
 };
 
+const getUserPortfolios = async (req, res) => {
+  try {
+    const { userid } = req.params;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 15;
+    const skip = (page - 1) * limit;
+
+    // 해당 유저가 생성한 포트폴리오 수 조회
+    const totalCount = await Portfolio.countDocuments({ userID: userid });
+
+    // Like와 join하여 해당 포트폴리오의 좋아요 수 계산
+    const pipeline = [
+      { $match: { userID: userid } }, // 일치하는 userID를 가진 포트폴리오만 조회, ObjectId로 변환할 필요 X
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "portfolioID",
+          as: "likes",
+        },
+      },
+      {
+        $addFields: {
+          likeCount: { $size: "$likes" },
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          contents: 1,
+          view: 1,
+          images: 1,
+          tags: 1,
+          techStack: 1,
+          createdAt: 1,
+          thumbnailImage: 1,
+          userID: 1,
+          likeCount: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    const portfoliosWithLikes = await Portfolio.aggregate(pipeline);
+
+    // 페이지네이션 메타데이터 계산
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.status(200).json({
+      success: true,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit,
+      },
+      data: portfoliosWithLikes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Error retrieving user portfolios",
+    });
+  }
+};
+
 module.exports = {
   getAllPortfolios,
   createPortfolio,
@@ -470,4 +542,5 @@ module.exports = {
   searchPortfolios,
   uploadSingleImage,
   uploadMultipleImages,
+  getUserPortfolios,
 };

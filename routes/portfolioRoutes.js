@@ -29,6 +29,9 @@ router.post("/:id/like", auth, portfolioController.toggleLike);
 // GET /api/portfolios/search/:type/:keyword
 router.get("/search/:type/:keyword", portfolioController.searchPortfolios);
 
+// GET /api/portfolios/user/:userid
+router.get("/user/:userid", portfolioController.getUserPortfolios);
+
 module.exports = router;
 
 /**
@@ -682,4 +685,82 @@ module.exports = router;
  *         description: 인증 실패
  *       500:
  *         description: 서버 에러
+ */
+/**
+ * @swagger
+ * /api/portfolios/user/{userid}:
+ *   get:
+ *     summary: 특정 사용자의 포트폴리오 목록 조회
+ *     tags: [Portfolios]
+ *     parameters:
+ *       - in: path
+ *         name: userid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 소유자 ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 조회할 페이지 번호
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 15
+ *         description: 한 페이지당 포트폴리오 수
+ *     responses:
+ *       200:
+ *         description: 사용자 포트폴리오 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalCount:
+ *                       type: integer
+ *                       example: 42
+ *                     hasNextPage:
+ *                       type: boolean
+ *                       example: true
+ *                     hasPrevPage:
+ *                       type: boolean
+ *                       example: false
+ *                     limit:
+ *                       type: integer
+ *                       example: 15
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Portfolio'
+ *       500:
+ *         description: 서버 에러
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 사용자 포트폴리오 목록 조회에 실패했습니다.
  */
