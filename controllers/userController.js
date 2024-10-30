@@ -41,7 +41,7 @@ const getUserInfo = async (req, res) => {
       },
       {
         $addFields: {
-          total_like: { $size: "$post_likes" },
+          total_likes: { $size: "$post_likes" },
         },
       },
       {
