@@ -93,7 +93,17 @@ module.exports = router;
  *                     - $ref: '#/components/schemas/User'
  *                     - type: object
  *                       properties:
- *                         total_like:
+ *                         techStack:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - type: object
+ *                                 properties:
+ *                                   _id:
+ *                                     type: string
+ *                                     example: string
+ *                               - $ref: '#/components/schemas/TechStack'
+ *                         total_likes:
  *                           type: number
  *                           example: 0
  *                         createdAt:
@@ -229,7 +239,7 @@ module.exports = router;
  *                   items:
  *                     type: object
  *                     properties:
- *                       _id:
+ *                       userID:
  *                         type: string
  *                         example: string
  *                       name:
@@ -247,8 +257,13 @@ module.exports = router;
  *                       techStack:
  *                         type: array
  *                         items:
- *                           type: string
- *                           example: React
+ *                           allOf:
+ *                             - type: object
+ *                               properties:
+ *                                 _id:
+ *                                   type: string
+ *                                   example: string
+ *                             - $ref: '#/components/schemas/TechStack'
  *                       total_likes:
  *                         type: number
  *                         example: 0
