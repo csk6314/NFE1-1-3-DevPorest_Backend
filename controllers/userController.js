@@ -211,6 +211,7 @@ const getPopularUserProfile = async (req, res) => {
         $group: {
           // userID로 그룹화, totalLikes = 총 좋아요 수
           _id: "$userID",
+          userID: { $first: "$userID" },
           name: { $first: "$name" },
           jobGroup: { $first: "$jobGroup" },
           profileImage: { $first: "$profileImage" },
@@ -232,6 +233,11 @@ const getPopularUserProfile = async (req, res) => {
               },
             },
           ],
+        },
+      },
+      {
+        $project: {
+          _id: 0,
         },
       },
       {
