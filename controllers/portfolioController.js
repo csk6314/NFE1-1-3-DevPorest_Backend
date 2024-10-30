@@ -1,5 +1,4 @@
 const { incrementViewCount } = require("../utils/viewCounter");
-const { generateBrowserFingerprint } = require("../utils/browserFingerprint");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const mongoose = require("mongoose");
