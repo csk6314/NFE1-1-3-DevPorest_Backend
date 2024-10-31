@@ -74,17 +74,30 @@ module.exports = router;
  *         techStack:
  *           type: array
  *           items:
- *             type: string
- *           description: 사용된 기술 스택 배열
+ *             type: object
+ *             properties:
+ *               skill:
+ *                 type: string
+ *               bgColor:
+ *                 type: string
+ *               textColor:
+ *                 type: string
+ *               jobCode:
+ *                 type: string
+ *           description: 사용된 기술 스택 정보 배열
  *         jobGroup:
- *           type: number
- *           description: 직무 카테고리
+ *           type: string
+ *           description: 직무 카테고리명
+ *           example: "frontend"
  *         thumbnailImage:
  *           type: string
  *           description: 썸네일 이미지 URL(단일)
  *         userID:
  *           type: string
- *           description: 포트폴리오 소유자 ID
+ *           description: 포트폴리오 소너자 ID
+ *         likeCount:
+ *           type: integer
+ *           description: 좋아요 수
  */
 
 /**

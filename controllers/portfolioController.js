@@ -13,29 +13,118 @@ const getAllPortfolios = async (req, res) => {
     // 전체 포트폴리오 수 조회
     const totalCount = await Portfolio.countDocuments();
 
-    // 페이지네이션이 적용된 포트폴리오(약칭 포폴) 조회
-    const portfolios = await Portfolio.find()
-      .sort({ createdAt: -1 }) // 최신순 정렬
-      .select("-__v") // __v 필드 제외
-      .skip(skip) // 불러올 포폴의 시작 지점을 설정. 해당 페이지에 해당하는 포폴만 조회하도록 함.
-      .limit(limit); // 한 번에 가져올 최대 포폴 수 제한
+    // Promise.All -> Aggregation Pipeline 구성
+    const pipeline = [
+      // Like 컬렉션과 조인하여 좋아요 수 계산
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "portfolioID",
+          as: "likes",
+        },
+      },
+      {
+        $addFields: {
+          likeCount: { $size: "$likes" },
+        },
+      },
+      // 1. techStack 배열을 개별 문서로 분리
+      {
+        $unwind: {
+          path: "$techStack",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 2. 분리된 각 techStack에 대해 techstacks 컬렉션과 join
+      {
+        $lookup: {
+          from: "techstacks",
+          let: { techSkill: "$techStack" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$skill", "$$techSkill"] },
+              },
+            },
+          ],
+          as: "techStackInfo",
+        },
+      },
+      // 3. $lookup으로 생성된 techStackInfo 배열을 개별 문서로 분리
+      {
+        $unwind: {
+          path: "$techStackInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 그룹화 -> 필요한 필드만 선택
+      {
+        $group: {
+          _id: "$_id",
+          title: { $first: "$title" },
+          contents: { $first: "$contents" },
+          view: { $first: "$view" },
+          images: { $first: "$images" },
+          tags: { $first: "$tags" },
+          techStack: {
+            $push: {
+              skill: "$techStackInfo.skill",
+              bgColor: "$techStackInfo.bgColor",
+              textColor: "$techStackInfo.textColor",
+              jobCode: "$techStackInfo.jobCode", // 있는게..좋겠죠?
+            },
+          },
+          createdAt: { $first: "$createdAt" },
+          thumbnailImage: { $first: "$thumbnailImage" },
+          userID: { $first: "$userID" },
+          likeCount: { $first: "$likeCount" },
+          jobGroup: { $first: "$jobGroup" },
+        },
+      },
+      // JobGroup 정보 조회 및 필드 선택
+      {
+        $lookup: {
+          from: "jobgroups",
+          let: { jobGroupId: "$jobGroup" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$jobGroupId"] } } },
+            { $project: { _id: 0, job: 1 } }, // _id를 명시적으로 제외, job 필드만 선택
+          ],
+          as: "jobGroupInfo",
+        },
+      },
+      {
+        $unwind: {
+          path: "$jobGroupInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 필요한 필드만 선택 및 추가 정리
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          contents: 1,
+          view: 1,
+          images: 1,
+          tags: 1,
+          techStack: 1,
+          createdAt: 1,
+          thumbnailImage: 1,
+          userID: 1,
+          likeCount: 1,
+          jobGroup: "$jobGroupInfo.job", // 직접 job 값을 할당하여 문자열로 제공
+        },
+      },
+      // 최신순 정렬
+      { $sort: { createdAt: -1 } },
+      // 페이지네이션
+      { $skip: skip },
+      { $limit: limit },
+    ];
 
-    /*
-     * 추가적인 DetailData 삽입
-     * 일단 likeCount만 추가
-     * 조회수 추가 해야함
-     **/
-    const portfoliosWithDetails = await Promise.all(
-      portfolios.map(async (portfolio) => {
-        const likeCount = await Like.countDocuments({
-          portfolioID: portfolio._id,
-        });
-        return {
-          ...portfolio.toObject(),
-          likeCount,
-        };
-      })
-    );
+    const portfolios = await Portfolio.aggregate(pipeline).exec();
 
     // 페이지네이션 메타데이터 계산
     const totalPages = Math.ceil(totalCount / limit);
@@ -52,12 +141,12 @@ const getAllPortfolios = async (req, res) => {
         hasPrevPage,
         limit,
       },
-      data: portfoliosWithDetails,
+      data: portfolios,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: "포트폴리오 목록을 가져오는데 실패했습니다.",
+      error: error.message || "포트폴리오 목록을 가져오는데 실패했습니다.",
     });
   }
 };
