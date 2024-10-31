@@ -317,7 +317,6 @@ const searchPortfolios = async (req, res) => {
     const { sort = "latest" } = req.query; // 정렬 옵션: 'latest' 또는 'popular'
     const page = parseInt(req.query.page, 10) || 1; // 기본값 1
     const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
-    const skip = (page - 1) * limit;
 
     // 타입과 키워드 처리 - 하이픈이나 공백인 경우 빈 문자열로 처리
     const searchType = type === "-" || type === " " ? "" : type;
@@ -336,143 +335,24 @@ const searchPortfolios = async (req, res) => {
       matchStage.title = new RegExp(searchKeyword, "i");
     }
 
-    // 전체 문서 수를 구하기 위한 집계 파이프라인
-    const countPipeline = [{ $match: matchStage }];
+    // 전체 문서 수 조회
+    const totalCount = await Portfolio.countDocuments(matchStage);
 
-    const countResult = await Portfolio.aggregate(countPipeline);
-    const totalCount = countResult.length;
-
-    // Aggregation Pipeline 구성
-    const pipeline = [
-      { $match: matchStage },
-      // Like 컬렉션과 조인하여 좋아요 수 계산
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "portfolioID",
-          as: "likes",
-        },
-      },
-      {
-        $addFields: {
-          likeCount: { $size: "$likes" },
-        },
-      },
-      // 1. techStack 배열을 개별 문서로 분리
-      {
-        $unwind: {
-          path: "$techStack",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 2. 분리된 각 techStack에 대해 techstacks 컬렉션과 join
-      {
-        $lookup: {
-          from: "techstacks",
-          let: { techSkill: "$techStack" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$skill", "$$techSkill"] },
-              },
-            },
-          ],
-          as: "techStackInfo",
-        },
-      },
-      // 3. $lookup으로 생성된 techStackInfo 배열을 개별 문서로 분리
-      {
-        $unwind: {
-          path: "$techStackInfo",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 그룹화 -> 필요한 필드만 선택
-      {
-        $group: {
-          _id: "$_id",
-          title: { $first: "$title" },
-          contents: { $first: "$contents" },
-          view: { $first: "$view" },
-          images: { $first: "$images" },
-          tags: { $first: "$tags" },
-          techStack: {
-            $push: {
-              skill: "$techStackInfo.skill",
-              bgColor: "$techStackInfo.bgColor",
-              textColor: "$techStackInfo.textColor",
-              jobCode: "$techStackInfo.jobCode",
-            },
-          },
-          createdAt: { $first: "$createdAt" },
-          thumbnailImage: { $first: "$thumbnailImage" },
-          userID: { $first: "$userID" },
-          likeCount: { $first: "$likeCount" },
-          jobGroup: { $first: "$jobGroup" },
-        },
-      },
-      // JobGroup 정보 조회 및 필드 선택
-      {
-        $lookup: {
-          from: "jobgroups",
-          let: { jobGroupId: "$jobGroup" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$jobGroupId"] } } },
-            { $project: { _id: 0, job: 1 } },
-          ],
-          as: "jobGroupInfo",
-        },
-      },
-      {
-        $unwind: {
-          path: "$jobGroupInfo",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 필요한 필드만 선택 및 추가 정리
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          contents: 1,
-          view: 1,
-          images: 1,
-          tags: 1,
-          techStack: 1,
-          createdAt: 1,
-          thumbnailImage: 1,
-          userID: 1,
-          likeCount: 1,
-          jobGroup: "$jobGroupInfo.job",
-        },
-      },
-    ];
-
-    // 정렬 조건 추가
-    if (sort === "popular") {
-      pipeline.push({ $sort: { likeCount: -1, createdAt: -1 } });
-    } else {
-      pipeline.push({ $sort: { createdAt: -1 } });
-    }
+    // 파이프라인 생성 및 실행
+    const pipeline = createPortfolioPipeline(matchStage, {
+      sort,
+      skip: (page - 1) * limit,
+      limit,
+    });
 
     const portfolios = await Portfolio.aggregate(pipeline);
 
-    // 페이지네이션 메타데이터 계산
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    // 페이지네이션 메타데이터 생성
+    const pagination = createPaginationMetadata(totalCount, page, limit);
 
     res.status(200).json({
       success: true,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalCount,
-        hasNextPage,
-        hasPrevPage,
-        limit,
-      },
+      pagination,
       data: portfolios,
     });
   } catch (error) {
