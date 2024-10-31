@@ -41,7 +41,7 @@ const getUserInfo = async (req, res) => {
       },
       {
         $addFields: {
-          total_likes: { $size: "$post_likes" },
+          totalLikes: { $size: "$post_likes" },
         },
       },
       {
@@ -243,7 +243,7 @@ const getPopularUserProfile = async (req, res) => {
           profileImage: { $first: "$profileImage" },
           intro: { $first: "$intro" },
           techStack: { $first: "$techStack" },
-          total_likes: { $sum: "$like_count" },
+          totalLikes: { $sum: "$like_count" },
         },
       },
       {
@@ -292,7 +292,7 @@ const getPopularUserProfile = async (req, res) => {
         },
       },
       {
-        $sort: { total_likes: -1 }, // 총 좋아요 수를 기준으로 내림차순 정렬
+        $sort: { totalLikes: -1 }, // 총 좋아요 수를 기준으로 내림차순 정렬
       },
       {
         $limit: 5,
