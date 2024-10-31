@@ -25,7 +25,19 @@ const createTechStack = async (req, res) => {
 
 const getAllTechStacks = async (req, res) => {
   try {
-    const techStacks = await TechStack.find().sort({ skill: 1 }).select("-__v");
+    const techStacks = await TechStack.aggregate([
+      {
+        $sort: {
+          skill: 1,
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          _id: 0,
+        },
+      },
+    ]);
 
     res.status(200).json({
       success: true,
@@ -52,18 +64,19 @@ const getTechStackStatistic = async (req, res) => {
       },
       {
         $addFields: {
-          total_count: { $size: "$portfolios" },
+          totalCount: { $size: "$portfolios" },
         },
       },
       {
         $project: {
           portfolios: 0,
           __v: 0,
+          _id: 0,
         },
       },
       {
         $sort: {
-          total_count: -1,
+          totalCount: -1,
         },
       },
     ];
