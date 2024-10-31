@@ -1,4 +1,8 @@
 const { incrementViewCount } = require("../utils/viewCounter");
+const {
+  createPortfolioPipeline,
+  createPaginationMetadata,
+} = require("../utils/portfolioPipeline");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const JobGroup = require("../models/JobGroup");
@@ -10,7 +14,6 @@ const getAllPortfolios = async (req, res) => {
     const jobGroup = req.query.jobGroup; // 쿼리파라미터
     const page = parseInt(req.query.page, 10) || 1; // 기본값 1
     const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
-    const skip = (page - 1) * limit;
 
     // 기본 쿼리 조건
     let matchStage = {};
@@ -31,134 +34,21 @@ const getAllPortfolios = async (req, res) => {
     const totalCount = await Portfolio.countDocuments(matchStage);
 
     // Promise.All -> Aggregation Pipeline 구성
-    const pipeline = [
-      { $match: matchStage }, // 기본 쿼리 조건 적용
-      // Like 컬렉션과 조인하여 좋아요 수 계산
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "portfolioID",
-          as: "likes",
-        },
-      },
-      {
-        $addFields: {
-          likeCount: { $size: "$likes" },
-        },
-      },
-      // 1. techStack 배열을 개별 문서로 분리
-      {
-        $unwind: {
-          path: "$techStack",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 2. 분리된 각 techStack에 대해 techstacks 컬렉션과 join
-      {
-        $lookup: {
-          from: "techstacks",
-          let: { techSkill: "$techStack" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$skill", "$$techSkill"] },
-              },
-            },
-          ],
-          as: "techStackInfo",
-        },
-      },
-      // 3. $lookup으로 생성된 techStackInfo 배열을 개별 문서로 분리
-      {
-        $unwind: {
-          path: "$techStackInfo",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 그룹화 -> 필요한 필드만 선택
-      {
-        $group: {
-          _id: "$_id",
-          title: { $first: "$title" },
-          contents: { $first: "$contents" },
-          view: { $first: "$view" },
-          images: { $first: "$images" },
-          tags: { $first: "$tags" },
-          techStack: {
-            $push: {
-              skill: "$techStackInfo.skill",
-              bgColor: "$techStackInfo.bgColor",
-              textColor: "$techStackInfo.textColor",
-              jobCode: "$techStackInfo.jobCode", // 있는게..좋겠죠?
-            },
-          },
-          createdAt: { $first: "$createdAt" },
-          thumbnailImage: { $first: "$thumbnailImage" },
-          userID: { $first: "$userID" },
-          likeCount: { $first: "$likeCount" },
-          jobGroup: { $first: "$jobGroup" },
-        },
-      },
-      // JobGroup 정보 조회 및 필드 선택
-      {
-        $lookup: {
-          from: "jobgroups",
-          let: { jobGroupId: "$jobGroup" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$jobGroupId"] } } },
-            { $project: { _id: 0, job: 1 } }, // _id를 명시적으로 제외, job 필드만 선택
-          ],
-          as: "jobGroupInfo",
-        },
-      },
-      {
-        $unwind: {
-          path: "$jobGroupInfo",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 필요한 필드만 선택 및 추가 정리
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          contents: 1,
-          view: 1,
-          images: 1,
-          tags: 1,
-          techStack: 1,
-          createdAt: 1,
-          thumbnailImage: 1,
-          userID: 1,
-          likeCount: 1,
-          jobGroup: "$jobGroupInfo.job", // 직접 job 값을 할당하여 문자열로 제공
-        },
-      },
-      // 최신순 정렬
-      { $sort: { createdAt: -1 } },
-      // 페이지네이션
-      { $skip: skip },
-      { $limit: limit },
-    ];
+    // 파이프라인 생성 및 실행
+    const pipeline = createPortfolioPipeline(matchStage, {
+      sort: "latest",
+      skip: (page - 1) * limit,
+      limit,
+    });
 
-    const portfolios = await Portfolio.aggregate(pipeline).exec();
+    const portfolios = await Portfolio.aggregate(pipeline);
 
-    // 페이지네이션 메타데이터 계산
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    // 페이지네이션 메타데이터 생성
+    const pagination = createPaginationMetadata(totalCount, page, limit);
 
     res.status(200).json({
       success: true,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalCount,
-        hasNextPage,
-        hasPrevPage,
-        limit,
-      },
+      pagination,
       data: portfolios,
     });
   } catch (error) {
@@ -643,63 +533,27 @@ const getUserPortfolios = async (req, res) => {
     const { userid } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 15;
-    const skip = (page - 1) * limit;
+
+    // 먼저 유저가 좋아요한 포트폴리오 ID들을 가져옴
+    const likedPortfolioIds = await Like.distinct("portfolioID", {
+      userID: userid,
+    });
 
     // 해당 유저가 생성한 포트폴리오 수 조회
-    const totalCount = await Portfolio.countDocuments({ userID: userid });
+    const matchStage = { userID: userid };
+    const totalCount = await Portfolio.countDocuments(matchStage);
 
-    // Like와 join하여 해당 포트폴리오의 좋아요 수 계산
-    const pipeline = [
-      { $match: { userID: userid } }, // 일치하는 userID를 가진 포트폴리오만 조회, ObjectId로 변환할 필요 X
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "portfolioID",
-          as: "likes",
-        },
-      },
-      {
-        $addFields: {
-          likeCount: { $size: "$likes" },
-        },
-      },
-      {
-        $project: {
-          title: 1,
-          contents: 1,
-          view: 1,
-          images: 1,
-          tags: 1,
-          techStack: 1,
-          createdAt: 1,
-          thumbnailImage: 1,
-          userID: 1,
-          likeCount: 1,
-        },
-      },
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit },
-    ];
+    const pipeline = createPortfolioPipeline(matchStage, {
+      skip: (page - 1) * limit,
+      limit,
+    });
 
     const portfoliosWithLikes = await Portfolio.aggregate(pipeline);
-
-    // 페이지네이션 메타데이터 계산
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const pagination = createPaginationMetadata(totalCount, page, limit);
 
     res.status(200).json({
       success: true,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalCount,
-        hasNextPage,
-        hasPrevPage,
-        limit,
-      },
+      pagination,
       data: portfoliosWithLikes,
     });
   } catch (error) {
@@ -715,89 +569,26 @@ const getUserLikePortfolios = async (req, res) => {
     const { userid } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 15;
-    const skip = (page - 1) * limit;
 
-    const pipeline = [
-      {
-        $match: {
-          userID: userid,
-        },
-      },
-      {
-        $lookup: {
-          from: "portfolios",
-          localField: "portfolioID",
-          foreignField: "_id",
-          as: "portfolios",
-        },
-      },
-      {
-        $unwind: {
-          path: "$portfolios",
-        },
-      },
-      {
-        $project: {
-          portfolioID: 0,
-          userID: 0,
-          _id: 0,
-        },
-      },
-      {
-        $replaceRoot: {
-          // 조인한 필드를 상위로 올려서 개별 필드로 만듦
-          newRoot: { $mergeObjects: ["$portfolios", "$$ROOT"] },
-        },
-      },
-      {
-        $project: {
-          portfolios: 0,
-          __v: 0,
-        },
-      },
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "portfolioID",
-          as: "likes",
-        },
-      },
-      {
-        $addFields: {
-          like_count: {
-            $size: "$likes",
-          },
-        },
-      },
-      {
-        $project: {
-          likes: 0,
-        },
-      },
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit },
-    ];
+    // 먼저 유저가 좋아요한 포트폴리오 ID들을 가져옴
+    const likedPortfolioIds = await Like.distinct("portfolioID", {
+      userID: userid,
+    });
 
-    const portfolios = await Like.aggregate(pipeline);
+    const matchStage = { _id: { $in: likedPortfolioIds } };
+    const totalCount = likedPortfolioIds.length;
 
-    // 페이지네이션 메타데이터 계산
-    const totalCount = await Like.countDocuments({ userID: userid });
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const pipeline = createPortfolioPipeline(matchStage, {
+      skip: (page - 1) * limit,
+      limit,
+    });
+
+    const portfolios = await Portfolio.aggregate(pipeline);
+    const pagination = createPaginationMetadata(totalCount, page, limit);
 
     return res.status(200).json({
       success: true,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalCount,
-        hasNextPage,
-        hasPrevPage,
-        limit,
-      },
+      pagination,
       data: portfolios,
     });
   } catch (error) {

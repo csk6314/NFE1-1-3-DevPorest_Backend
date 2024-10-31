@@ -791,7 +791,62 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       title:
+ *                         type: string
+ *                         example: "My Portfolio"
+ *                       contents:
+ *                         type: string
+ *                         example: "Portfolio description"
+ *                       view:
+ *                         type: number
+ *                         example: 42
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["image1.jpg", "image2.jpg"]
+ *                       tags:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["web", "frontend"]
+ *                       techStack:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       thumbnailImage:
+ *                         type: string
+ *                         example: "thumbnail.jpg"
+ *                       userID:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       likeCount:
+ *                         type: number
+ *                         example: 15
+ *                       jobGroup:
+ *                         type: string
+ *                         example: "Frontend"
  *       500:
  *         description: 서버 에러
  *         content:
@@ -804,11 +859,8 @@ module.exports = router;
  *                   example: false
  *                 error:
  *                   type: string
- *                   example: 사용자 포트폴리오 목록 조회에 실패했습니다.
- */
-
-/**
- * @swagger
+ *                   example: Error retrieving user portfolios
+ *
  * /api/portfolios/like/{userid}:
  *   get:
  *     summary: 특정 사용자가 좋아요한 포트폴리오 목록 조회
@@ -819,7 +871,7 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: string
- *         description: 포트폴리오 소유자 ID
+ *         description: 사용자 ID
  *       - in: query
  *         name: page
  *         schema:
@@ -837,7 +889,7 @@ module.exports = router;
  *         description: 한 페이지당 포트폴리오 수
  *     responses:
  *       200:
- *         description: 사용자 포트폴리오 목록 조회 성공
+ *         description: 사용자가 좋아요한 포트폴리오 목록 조회 성공
  *         content:
  *           application/json:
  *             schema:
@@ -870,7 +922,62 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       title:
+ *                         type: string
+ *                         example: "My Portfolio"
+ *                       contents:
+ *                         type: string
+ *                         example: "Portfolio description"
+ *                       view:
+ *                         type: number
+ *                         example: 42
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["image1.jpg", "image2.jpg"]
+ *                       tags:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["web", "frontend"]
+ *                       techStack:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       thumbnailImage:
+ *                         type: string
+ *                         example: "thumbnail.jpg"
+ *                       userID:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       likeCount:
+ *                         type: number
+ *                         example: 15
+ *                       jobGroup:
+ *                         type: string
+ *                         example: "Frontend"
  *       500:
  *         description: 서버 에러
  *         content:
@@ -883,5 +990,5 @@ module.exports = router;
  *                   example: false
  *                 error:
  *                   type: string
- *                   example: 사용자 포트폴리오 목록 조회에 실패했습니다.
+ *                   example: 유저의 좋아요한 포트폴리오를 가져오지 못했습니다.
  */
