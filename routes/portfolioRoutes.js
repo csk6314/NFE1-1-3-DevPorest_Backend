@@ -74,24 +74,37 @@ module.exports = router;
  *         techStack:
  *           type: array
  *           items:
- *             type: string
- *           description: 사용된 기술 스택 배열
+ *             type: object
+ *             properties:
+ *               skill:
+ *                 type: string
+ *               bgColor:
+ *                 type: string
+ *               textColor:
+ *                 type: string
+ *               jobCode:
+ *                 type: string
+ *           description: 사용된 기술 스택 정보 배열
  *         jobGroup:
- *           type: number
- *           description: 직무 카테고리
+ *           type: string
+ *           description: 직무 카테고리명
+ *           example: "frontend"
  *         thumbnailImage:
  *           type: string
  *           description: 썸네일 이미지 URL(단일)
  *         userID:
  *           type: string
- *           description: 포트폴리오 소유자 ID
+ *           description: 포트폴리오 소너자 ID
+ *         likeCount:
+ *           type: integer
+ *           description: 좋아요 수
  */
 
 /**
  * @swagger
  * /api/portfolios:
  *   get:
- *     summary: 전체 포트폴리오 조회 (페이지네이션)
+ *     summary: 전체 포트폴리오 조회 (페이지네이션, 직무별 필터링)
  *     tags: [Portfolios]
  *     parameters:
  *       - in: query
@@ -109,6 +122,12 @@ module.exports = router;
  *           maximum: 100
  *           default: 15
  *         description: 한 페이지당 포트폴리오 수
+ *       - in: query
+ *         name: jobGroup
+ *         schema:
+ *           type: string
+ *           enum: ['Frontend', 'Backend']
+ *         description: 직무군 필터 (선택사항)
  *     responses:
  *       200:
  *         description: 포트폴리오 목록 조회 성공
@@ -144,13 +163,20 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/Portfolio'
- *                       - type: object
- *                         properties:
- *                           likeCount:
- *                             type: number
- *                             example: 0
+ *                     $ref: '#/components/schemas/Portfolio'
+ *       400:
+ *         description: 잘못된 요청 (유효하지 않은 직무군)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 유효하지 않은 직무군입니다.
  *       500:
  *         description: 서버 에러
  *         content:
@@ -518,8 +544,20 @@ module.exports = router;
  *                       techStack:
  *                         type: array
  *                         items:
- *                           type: string
- *                         example: ["React", "TensorFlow"]
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
  *                       createdAt:
  *                         type: string
  *                         format: date-time
@@ -534,14 +572,8 @@ module.exports = router;
  *                         type: integer
  *                         example: 42
  *                       jobGroup:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                             example: "507f1f77bcf86cd799439012"
- *                           name:
- *                             type: string
- *                             example: "프론트엔드"
+ *                         type: string
+ *                         example: "프론트엔드"
  *       500:
  *         description: 서버 에러
  *         content:
@@ -759,7 +791,62 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       title:
+ *                         type: string
+ *                         example: "My Portfolio"
+ *                       contents:
+ *                         type: string
+ *                         example: "Portfolio description"
+ *                       view:
+ *                         type: number
+ *                         example: 42
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["image1.jpg", "image2.jpg"]
+ *                       tags:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["web", "frontend"]
+ *                       techStack:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       thumbnailImage:
+ *                         type: string
+ *                         example: "thumbnail.jpg"
+ *                       userID:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       likeCount:
+ *                         type: number
+ *                         example: 15
+ *                       jobGroup:
+ *                         type: string
+ *                         example: "Frontend"
  *       500:
  *         description: 서버 에러
  *         content:
@@ -772,11 +859,8 @@ module.exports = router;
  *                   example: false
  *                 error:
  *                   type: string
- *                   example: 사용자 포트폴리오 목록 조회에 실패했습니다.
- */
-
-/**
- * @swagger
+ *                   example: Error retrieving user portfolios
+ *
  * /api/portfolios/like/{userid}:
  *   get:
  *     summary: 특정 사용자가 좋아요한 포트폴리오 목록 조회
@@ -787,7 +871,7 @@ module.exports = router;
  *         required: true
  *         schema:
  *           type: string
- *         description: 포트폴리오 소유자 ID
+ *         description: 사용자 ID
  *       - in: query
  *         name: page
  *         schema:
@@ -805,7 +889,7 @@ module.exports = router;
  *         description: 한 페이지당 포트폴리오 수
  *     responses:
  *       200:
- *         description: 사용자 포트폴리오 목록 조회 성공
+ *         description: 사용자가 좋아요한 포트폴리오 목록 조회 성공
  *         content:
  *           application/json:
  *             schema:
@@ -838,7 +922,62 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Portfolio'
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       title:
+ *                         type: string
+ *                         example: "My Portfolio"
+ *                       contents:
+ *                         type: string
+ *                         example: "Portfolio description"
+ *                       view:
+ *                         type: number
+ *                         example: 42
+ *                       images:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["image1.jpg", "image2.jpg"]
+ *                       tags:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["web", "frontend"]
+ *                       techStack:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       thumbnailImage:
+ *                         type: string
+ *                         example: "thumbnail.jpg"
+ *                       userID:
+ *                         type: string
+ *                         example: "507f1f77bcf86cd799439011"
+ *                       likeCount:
+ *                         type: number
+ *                         example: 15
+ *                       jobGroup:
+ *                         type: string
+ *                         example: "Frontend"
  *       500:
  *         description: 서버 에러
  *         content:
@@ -851,5 +990,5 @@ module.exports = router;
  *                   example: false
  *                 error:
  *                   type: string
- *                   example: 사용자 포트폴리오 목록 조회에 실패했습니다.
+ *                   example: 유저의 좋아요한 포트폴리오를 가져오지 못했습니다.
  */
