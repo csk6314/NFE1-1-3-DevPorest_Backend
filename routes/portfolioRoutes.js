@@ -544,8 +544,20 @@ module.exports = router;
  *                       techStack:
  *                         type: array
  *                         items:
- *                           type: string
- *                         example: ["React", "TensorFlow"]
+ *                           type: object
+ *                           properties:
+ *                             skill:
+ *                               type: string
+ *                               example: "React"
+ *                             bgColor:
+ *                               type: string
+ *                               example: "#61DAFB"
+ *                             textColor:
+ *                               type: string
+ *                               example: "#000000"
+ *                             jobCode:
+ *                               type: string
+ *                               example: "FE"
  *                       createdAt:
  *                         type: string
  *                         format: date-time
@@ -560,14 +572,8 @@ module.exports = router;
  *                         type: integer
  *                         example: 42
  *                       jobGroup:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                             example: "507f1f77bcf86cd799439012"
- *                           name:
- *                             type: string
- *                             example: "프론트엔드"
+ *                         type: string
+ *                         example: "프론트엔드"
  *       500:
  *         description: 서버 에러
  *         content:

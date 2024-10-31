@@ -448,8 +448,8 @@ const searchPortfolios = async (req, res) => {
     // Aggregation Pipeline 구성
     const pipeline = [
       { $match: matchStage },
+      // Like 컬렉션과 조인하여 좋아요 수 계산
       {
-        // Like 컬렉션과 조인하여 좋아요 수 계산
         $lookup: {
           from: "likes",
           localField: "_id",
@@ -458,17 +458,72 @@ const searchPortfolios = async (req, res) => {
         },
       },
       {
-        // 좋아요 수를 계산하여 새로운 필드 추가
         $addFields: {
           likeCount: { $size: "$likes" },
         },
       },
-      // jobGroup 정보 조회
+      // 1. techStack 배열을 개별 문서로 분리
+      {
+        $unwind: {
+          path: "$techStack",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 2. 분리된 각 techStack에 대해 techstacks 컬렉션과 join
+      {
+        $lookup: {
+          from: "techstacks",
+          let: { techSkill: "$techStack" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$skill", "$$techSkill"] },
+              },
+            },
+          ],
+          as: "techStackInfo",
+        },
+      },
+      // 3. $lookup으로 생성된 techStackInfo 배열을 개별 문서로 분리
+      {
+        $unwind: {
+          path: "$techStackInfo",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // 그룹화 -> 필요한 필드만 선택
+      {
+        $group: {
+          _id: "$_id",
+          title: { $first: "$title" },
+          contents: { $first: "$contents" },
+          view: { $first: "$view" },
+          images: { $first: "$images" },
+          tags: { $first: "$tags" },
+          techStack: {
+            $push: {
+              skill: "$techStackInfo.skill",
+              bgColor: "$techStackInfo.bgColor",
+              textColor: "$techStackInfo.textColor",
+              jobCode: "$techStackInfo.jobCode",
+            },
+          },
+          createdAt: { $first: "$createdAt" },
+          thumbnailImage: { $first: "$thumbnailImage" },
+          userID: { $first: "$userID" },
+          likeCount: { $first: "$likeCount" },
+          jobGroup: { $first: "$jobGroup" },
+        },
+      },
+      // JobGroup 정보 조회 및 필드 선택
       {
         $lookup: {
           from: "jobgroups",
-          localField: "jobGroup",
-          foreignField: "_id",
+          let: { jobGroupId: "$jobGroup" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$jobGroupId"] } } },
+            { $project: { _id: 0, job: 1 } },
+          ],
           as: "jobGroupInfo",
         },
       },
@@ -478,20 +533,21 @@ const searchPortfolios = async (req, res) => {
           preserveNullAndEmptyArrays: true,
         },
       },
-      // 필요한 필드만 선택
+      // 필요한 필드만 선택 및 추가 정리
       {
         $project: {
+          _id: 1,
           title: 1,
           contents: 1,
           view: 1,
           images: 1,
           tags: 1,
-          techStack: 1, // 기술 스택은 문자열 배열로 직접 표시
+          techStack: 1,
           createdAt: 1,
           thumbnailImage: 1,
           userID: 1,
           likeCount: 1,
-          jobGroup: "$jobGroupInfo", // jobGroup 정보 매핑
+          jobGroup: "$jobGroupInfo.job",
         },
       },
     ];
