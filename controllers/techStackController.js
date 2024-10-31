@@ -71,6 +71,7 @@ const getTechStackStatistic = async (req, res) => {
         $project: {
           portfolios: 0,
           __v: 0,
+          _id: 0,
         },
       },
       {
