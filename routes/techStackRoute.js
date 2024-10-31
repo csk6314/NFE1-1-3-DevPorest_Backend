@@ -145,7 +145,7 @@ module.exports = router;
  *                     - $ref: '#/components/schemas/TechStack'
  *                     - type: object
  *                     - properties:
- *                         total_count:
+ *                         totalCount:
  *                           type: number
  *                           example: 0
  *       500:

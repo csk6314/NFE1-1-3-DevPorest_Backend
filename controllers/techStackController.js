@@ -64,7 +64,7 @@ const getTechStackStatistic = async (req, res) => {
       },
       {
         $addFields: {
-          total_count: { $size: "$portfolios" },
+          totalCount: { $size: "$portfolios" },
         },
       },
       {
@@ -76,7 +76,7 @@ const getTechStackStatistic = async (req, res) => {
       },
       {
         $sort: {
-          total_count: -1,
+          totalCount: -1,
         },
       },
     ];
