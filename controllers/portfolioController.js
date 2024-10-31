@@ -2,7 +2,7 @@ const { incrementViewCount } = require("../utils/viewCounter");
 const {
   createPortfolioPipeline,
   createPaginationMetadata,
-} = require("../utils/portfolioPipeline");
+} = require("../pipeline/portfolioPipeline");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
 const JobGroup = require("../models/JobGroup");
@@ -80,7 +80,14 @@ const getPortfolioById = async (req, res) => {
     }
 
     // 실제 세션 객체 전달
-    const portfolio = await incrementViewCount(id, req.session, session);
+    await incrementViewCount(id, req.session, session);
+
+    // 파이프라인을 사용하여 포트폴리오 조회 (pagination은 제외)
+    const pipeline = createPortfolioPipeline({
+      _id: new mongoose.Types.ObjectId(id),
+    });
+
+    const [portfolio] = await Portfolio.aggregate(pipeline);
 
     if (!portfolio) {
       await session.abortTransaction();
@@ -110,7 +117,7 @@ const getPortfolioById = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        ...portfolio.toObject(),
+        ...portfolio,
         like,
         likeCount,
       },
