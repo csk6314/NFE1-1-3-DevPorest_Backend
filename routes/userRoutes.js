@@ -57,7 +57,7 @@ module.exports = router;
  *             type: string
  *           description: 유저 기술 스택 배열
  *         jobGroup:
- *           type: number
+ *           type: string
  *           description: 유저 직무
  *         profileImage:
  *           type: string
@@ -100,13 +100,7 @@ module.exports = router;
  *                               - type: object
  *                                 properties:
  *                               - $ref: '#/components/schemas/TechStack'
- *                         jobGroup:
- *                           type: object
- *                           properties:
- *                               job:
- *                                 type: string
- *                                 example: string
- *                         total_likes:
+ *                         totalLikes:
  *                           type: number
  *                           example: 0
  *                         createdAt:
@@ -248,12 +242,6 @@ module.exports = router;
  *                       name:
  *                         type: string
  *                         example: string
- *                       jobGroup:
- *                         type: object
- *                         properties:
- *                             job:
- *                               type: string
- *                               example: string
  *                       profileImage:
  *                         type: string
  *                         example: string
@@ -264,7 +252,7 @@ module.exports = router;
  *                         type: array
  *                         items:
  *                             $ref: '#/components/schemas/TechStack'
- *                       total_likes:
+ *                       totalLikes:
  *                         type: number
  *                         example: 0
  *       500:
