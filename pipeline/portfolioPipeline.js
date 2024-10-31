@@ -25,57 +25,28 @@ const createPortfolioPipeline = (matchStage = {}, options = {}) => {
         likeCount: { $size: "$likes" },
       },
     },
-    // 1. techStack 배열을 개별 문서로 분리
-    {
-      $unwind: {
-        path: "$techStack",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    // 2. 분리된 각 techStack에 대해 techstacks 컬렉션과 join
+    // techStack 정보를 한 번에 조회하도록 변경
     {
       $lookup: {
         from: "techstacks",
-        let: { techSkill: "$techStack" },
+        let: { techSkills: "$techStack" },
         pipeline: [
           {
             $match: {
-              $expr: { $eq: ["$skill", "$$techSkill"] },
+              $expr: { $in: ["$skill", "$$techSkills"] }, // $in : 한 번에 모든 techStack 정보를 조회
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              skill: 1,
+              bgColor: 1,
+              textColor: 1,
+              jobCode: 1,
             },
           },
         ],
         as: "techStackInfo",
-      },
-    },
-    // 3. techStackInfo 배열을 개별 문서로 분리
-    {
-      $unwind: {
-        path: "$techStackInfo",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    // 그룹화 및 필드 선택
-    {
-      $group: {
-        _id: "$_id",
-        title: { $first: "$title" },
-        contents: { $first: "$contents" },
-        view: { $first: "$view" },
-        images: { $first: "$images" },
-        tags: { $first: "$tags" },
-        techStack: {
-          $push: {
-            skill: "$techStackInfo.skill",
-            bgColor: "$techStackInfo.bgColor",
-            textColor: "$techStackInfo.textColor",
-            jobCode: "$techStackInfo.jobCode",
-          },
-        },
-        createdAt: { $first: "$createdAt" },
-        thumbnailImage: { $first: "$thumbnailImage" },
-        userID: { $first: "$userID" },
-        likeCount: { $first: "$likeCount" },
-        jobGroup: { $first: "$jobGroup" },
       },
     },
     // JobGroup 정보 조회 및 필드 선택
@@ -90,12 +61,6 @@ const createPortfolioPipeline = (matchStage = {}, options = {}) => {
         as: "jobGroupInfo",
       },
     },
-    {
-      $unwind: {
-        path: "$jobGroupInfo",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
     // 최종 필드 선택
     {
       $project: {
@@ -105,12 +70,12 @@ const createPortfolioPipeline = (matchStage = {}, options = {}) => {
         view: 1,
         images: 1,
         tags: 1,
-        techStack: 1,
+        techStack: "$techStackInfo",
         createdAt: 1,
         thumbnailImage: 1,
         userID: 1,
         likeCount: 1,
-        jobGroup: "$jobGroupInfo.job",
+        jobGroup: { $arrayElemAt: ["$jobGroupInfo.job", 0] }, // unwind 대신 $arrayElemAt을 사용하여 첫 번째 요소(job)만 선택
       },
     },
   ];
