@@ -87,6 +87,11 @@ const getUserInfo = async (req, res) => {
       {
         $unwind: "$jobGroup",
       },
+      {
+        $addFields: {
+          jobGroup: "$jobGroup.job",
+        },
+      },
     ]);
 
     if (user.length < 1) {
@@ -275,6 +280,11 @@ const getPopularUserProfile = async (req, res) => {
       },
       {
         $unwind: "$jobGroup",
+      },
+      {
+        $addFields: {
+          jobGroup: "$jobGroup.job",
+        },
       },
       {
         $project: {
