@@ -104,7 +104,7 @@ module.exports = router;
  * @swagger
  * /api/portfolios:
  *   get:
- *     summary: 전체 포트폴리오 조회 (페이지네이션)
+ *     summary: 전체 포트폴리오 조회 (페이지네이션, 직무별 필터링)
  *     tags: [Portfolios]
  *     parameters:
  *       - in: query
@@ -122,6 +122,12 @@ module.exports = router;
  *           maximum: 100
  *           default: 15
  *         description: 한 페이지당 포트폴리오 수
+ *       - in: query
+ *         name: jobGroup
+ *         schema:
+ *           type: string
+ *           enum: ['Frontend', 'Backend']
+ *         description: 직무군 필터 (선택사항)
  *     responses:
  *       200:
  *         description: 포트폴리오 목록 조회 성공
@@ -157,13 +163,20 @@ module.exports = router;
  *                 data:
  *                   type: array
  *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/Portfolio'
- *                       - type: object
- *                         properties:
- *                           likeCount:
- *                             type: number
- *                             example: 0
+ *                     $ref: '#/components/schemas/Portfolio'
+ *       400:
+ *         description: 잘못된 요청 (유효하지 않은 직무군)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 유효하지 않은 직무군입니다.
  *       500:
  *         description: 서버 에러
  *         content:

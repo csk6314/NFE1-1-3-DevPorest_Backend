@@ -1,20 +1,38 @@
 const { incrementViewCount } = require("../utils/viewCounter");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
+const JobGroup = require("../models/JobGroup");
 const mongoose = require("mongoose");
 
 // 포트폴리오 목록 조회
 const getAllPortfolios = async (req, res) => {
   try {
+    const jobGroup = req.query.jobGroup; // 쿼리파라미터
     const page = parseInt(req.query.page, 10) || 1; // 기본값 1
     const limit = parseInt(req.query.limit, 10) || 15; // 기본값 15
     const skip = (page - 1) * limit;
 
+    // 기본 쿼리 조건
+    let matchStage = {};
+
+    // jobGroup이 제공된 경우, JobGroup 컬렉션에서 해당 job에 맞는 _id 찾기
+    if (jobGroup) {
+      const jobGroupDoc = await JobGroup.findOne({ job: jobGroup });
+      if (!jobGroupDoc) {
+        return res.status(400).json({
+          success: false,
+          error: "유효하지 않은 직무군입니다.",
+        });
+      }
+      matchStage.jobGroup = jobGroupDoc._id;
+    }
+
     // 전체 포트폴리오 수 조회
-    const totalCount = await Portfolio.countDocuments();
+    const totalCount = await Portfolio.countDocuments(matchStage);
 
     // Promise.All -> Aggregation Pipeline 구성
     const pipeline = [
+      { $match: matchStage }, // 기본 쿼리 조건 적용
       // Like 컬렉션과 조인하여 좋아요 수 계산
       {
         $lookup: {
