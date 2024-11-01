@@ -149,22 +149,22 @@ const createPortfolio = async (req, res) => {
     const userID = req.userinfo.id;
 
     // URL 유효성 검사 (선택사항)
-    const validateUrl = (url) => {
-      return (
-        url.startsWith("https://") && url.includes(process.env.AWS_S3_BUCKET)
-      );
-    };
+    // const validateUrl = (url) => {
+    //   return (
+    //     url.startsWith("https://") && url.includes(process.env.AWS_S3_BUCKET)
+    //   );
+    // };
 
-    if (thumbnailImage && !validateUrl(thumbnailImage)) {
-      throw new Error("유효하지 않은 썸네일 이미지 URL입니다.");
-    }
+    // if (thumbnailImage && !validateUrl(thumbnailImage)) {
+    //   throw new Error("유효하지 않은 썸네일 이미지 URL입니다.");
+    // }
 
-    if (images && Array.isArray(images)) {
-      const invalidUrls = images.filter((url) => !validateUrl(url));
-      if (invalidUrls.length > 0) {
-        throw new Error("유효하지 않은 이미지 URL이 포함되어 있습니다.");
-      }
-    }
+    // if (images && Array.isArray(images)) {
+    //   const invalidUrls = images.filter((url) => !validateUrl(url));
+    //   if (invalidUrls.length > 0) {
+    //     throw new Error("유효하지 않은 이미지 URL이 포함되어 있습니다.");
+    //   }
+    // }
 
     const portfolio = new Portfolio({
       title,
@@ -231,7 +231,8 @@ const updatePortfolio = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: portfolio,
+      message: "포트폴리오가 성공적으로 수정되었습니다.",
+      _id: portfolio._id,
     });
   } catch (error) {
     res.status(400).json({
