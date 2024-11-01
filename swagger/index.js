@@ -21,6 +21,10 @@ const options = {
         url: `http://localhost:${port}`,
         description: "Local Development",
       },
+      {
+        url: `${process.env.SERVER_DEPLOY_URL}:${port}`,
+        description: "Deploy Development",
+      },
     ],
     // components: {},
   },
