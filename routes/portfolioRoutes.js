@@ -517,8 +517,22 @@ module.exports = router;
  *                 success:
  *                   type: boolean
  *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "포트폴리오가 성공적으로 생성되었습니다."
  *                 data:
- *                   $ref: '#/components/schemas/Portfolio'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Portfolio'
+ *                     - type: object
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                           description: MongoDB ObjectId
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-11-01T03:01:58.498Z"
  *       401:
  *         description: 인증 실패
  *         content:
@@ -576,8 +590,13 @@ module.exports = router;
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 data:
- *                   $ref: '#/components/schemas/Portfolio'
+ *                 message:
+ *                   type: string
+ *                   example: "포트폴리오가 성공적으로 수정되었습니다."
+ *                 _id:
+ *                   type: string
+ *                   example: "507f1f77bcf86cd799439011"
+ *                   description: MongoDB ObjectId
  *       401:
  *         description: 인증 실패
  *         content:

@@ -319,7 +319,8 @@ const updatePortfolio = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: portfolio,
+      message: "포트폴리오가 성공적으로 수정되었습니다.",
+      _id: portfolio._id,
     });
   } catch (error) {
     res.status(400).json({
