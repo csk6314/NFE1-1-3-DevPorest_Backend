@@ -329,16 +329,74 @@ module.exports = router;
  *                   type: boolean
  *                   example: true
  *                 data:
- *                   allOf:
- *                     - $ref: '#/components/schemas/Portfolio'
- *                     - type: object
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "507f1f77bcf86cd799439011"
+ *                     title:
+ *                       type: string
+ *                       example: "My Portfolio"
+ *                     contents:
+ *                       type: string
+ *                       example: "Portfolio description"
+ *                     view:
+ *                       type: number
+ *                       example: 42
+ *                     images:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["image1.jpg", "image2.jpg"]
+ *                     tags:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["web", "frontend"]
+ *                     techStack:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           skill:
+ *                             type: string
+ *                             example: "React"
+ *                           bgColor:
+ *                             type: string
+ *                             example: "#61DAFB"
+ *                           textColor:
+ *                             type: string
+ *                             example: "#000000"
+ *                           jobCode:
+ *                             type: string
+ *                             example: "FE"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     thumbnailImage:
+ *                       type: string
+ *                       example: "thumbnail.jpg"
+ *                     userInfo:
+ *                       type: object
  *                       properties:
- *                         like:
- *                           type: boolean
- *                           example: false
- *                         likeCount:
- *                           type: number
- *                           example: 0
+ *                         userID:
+ *                           type: string
+ *                           example: "user123"
+ *                         name:
+ *                           type: string
+ *                           example: "John Doe"
+ *                         profileImage:
+ *                           type: string
+ *                           example: "profile.jpg"
+ *                     like:
+ *                       type: boolean
+ *                       example: false
+ *                     likeCount:
+ *                       type: number
+ *                       example: 15
+ *                     jobGroup:
+ *                       type: string
+ *                       example: "Frontend"
  *       400:
  *         description: 잘못된 요청
  *         content:
@@ -781,9 +839,18 @@ module.exports = router;
  *                       thumbnailImage:
  *                         type: string
  *                         example: "thumbnail.jpg"
- *                       userID:
- *                         type: string
- *                         example: "507f1f77bcf86cd799439011"
+ *                       userInfo:
+ *                         type: object
+ *                         properties:
+ *                           userID:
+ *                             type: string
+ *                             example: "user123"
+ *                           name:
+ *                             type: string
+ *                             example: "John Doe"
+ *                           profileImage:
+ *                             type: string
+ *                             example: "profile.jpg"
  *                       likeCount:
  *                         type: number
  *                         example: 15
@@ -802,7 +869,7 @@ module.exports = router;
  *                   example: false
  *                 error:
  *                   type: string
- *                   example: Error retrieving user portfolios
+ *                   example: 유저의 포트폴리오를 가져오지 못했습니다.
  *
  * /api/portfolios/like/{userid}:
  *   get:
@@ -912,9 +979,18 @@ module.exports = router;
  *                       thumbnailImage:
  *                         type: string
  *                         example: "thumbnail.jpg"
- *                       userID:
- *                         type: string
- *                         example: "507f1f77bcf86cd799439011"
+ *                       userInfo:
+ *                         type: object
+ *                         properties:
+ *                           userID:
+ *                             type: string
+ *                             example: "user123"
+ *                           name:
+ *                             type: string
+ *                             example: "John Doe"
+ *                           profileImage:
+ *                             type: string
+ *                             example: "profile.jpg"
  *                       likeCount:
  *                         type: number
  *                         example: 15
