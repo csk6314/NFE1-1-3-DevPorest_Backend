@@ -39,6 +39,7 @@ const portfolioSchema = new Schema({
     required: true,
     ref: "JobGroup", // JobGroup 모델을 참조
   },
+  links: [{ type: String, required: true }],
   thumbnailImage: {
     type: String,
     default: null,
