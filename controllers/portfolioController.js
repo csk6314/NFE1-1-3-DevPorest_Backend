@@ -1,12 +1,10 @@
 const { incrementViewCount } = require("../utils/viewCounter");
-// const { createPortfolioPipeline } = require("../pipeline/portfolioPipeline");
 const {
   createSearchPipeline,
   createPaginationMetadata,
 } = require("../pipeline/portfolioSearchPipeline");
 const Like = require("../models/Like");
 const Portfolio = require("../models/Portfolio");
-const JobGroup = require("../models/JobGroup");
 const mongoose = require("mongoose");
 
 // 기존의 getAllPortfolios와 searchPortfolios를 통합한 새로운 검색 api
