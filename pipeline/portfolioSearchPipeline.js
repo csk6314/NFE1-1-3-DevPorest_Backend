@@ -218,6 +218,7 @@ const createSearchPipeline = (params) => {
       thumbnailImage: 1,
       userInfo: 1,
       likeCount: 1,
+      links: 1,
       jobGroup: { $arrayElemAt: ["$jobGroupInfo.job", 0] },
     },
   });

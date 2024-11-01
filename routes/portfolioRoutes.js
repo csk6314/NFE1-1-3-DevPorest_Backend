@@ -427,6 +427,73 @@ module.exports = router;
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Portfolio:
+ *       type: object
+ *       required:
+ *         - title
+ *         - contents
+ *         - images
+ *         - techStack
+ *         - jobGroup
+ *         - links
+ *         - userID
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: 포트폴리오 제목
+ *           example: "3년차 프론트엔드 개발자 김철수입니다"
+ *         contents:
+ *           type: string
+ *           description: 포트폴리오 내용
+ *           example: "안녕하세요! 사용자 경험을 중요하게 생각하는 프론트엔드 개발자 김철수입니다..."
+ *         view:
+ *           type: number
+ *           description: 조회수
+ *           default: 0
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 포트폴리오 이미지 URL 배열
+ *           example: ["profile-main.jpg", "workplace.jpg", "presentation.jpg"]
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 태그 목록
+ *           example: ["프론트엔드", "React", "TypeScript", "3년차", "핀테크"]
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: 생성 일시
+ *         techStack:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 사용 기술 스택
+ *           example: ["React", "TypeScript", "Next.js"]
+ *         jobGroup:
+ *           type: string
+ *           description: 직군 ID
+ *           example: "671f4eaa1f6112721acacbf8"
+ *         links:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 관련 링크 목록 (GitHub, 블로그 등)
+ *           example: ["https://github.com/username", "https://velog.io/@username"]
+ *         thumbnailImage:
+ *           type: string
+ *           description: 썸네일 이미지 URL
+ *           example: "profile-thumbnail.jpg"
+ *         userID:
+ *           type: string
+ *           description: 사용자 ID
+ *           example: "user555"
+ *
+ * @swagger
  * /api/portfolios:
  *   post:
  *     summary: 새 포트폴리오 생성 (인증 필요)
