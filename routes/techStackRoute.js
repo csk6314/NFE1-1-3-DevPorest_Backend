@@ -122,11 +122,11 @@ module.exports = router;
  *     tags: [TechStack]
  *     parameters:
  *       - in: query
- *         name: jobcode
+ *         name: job
  *         required: false
  *         schema:
  *           type: string
- *         description: 직무 코드(ID) (24자리 16진수 ObjectId)
+ *         description: 직무 명
  *     responses:
  *       200:
  *         description: 기술스택 목록 조회 성공

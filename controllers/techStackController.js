@@ -1,3 +1,4 @@
+const JobGroup = require("../models/JobGroup");
 const Portfolio = require("../models/Portfolio");
 const TechStack = require("../models/TechStack");
 const mongoose = require("mongoose");
@@ -81,11 +82,18 @@ const getTechStackStatistic = async (req, res) => {
       },
     ];
 
-    if (req.query.jobcode) {
+    if (req.query.job) {
+      const jobGroup = await JobGroup.find({ job: req.query.job });
+
+      if (jobGroup.length < 1) {
+        throw new Error("잘못된 직무 명을 입력하셨습니다.");
+      }
+      const jobCode = jobGroup[0]._id;
+
       pipelines = [
         {
           $match: {
-            jobCode: new mongoose.Types.ObjectId(req.query.jobcode + ""),
+            jobCode: new mongoose.Types.ObjectId(jobCode + ""),
           },
         },
         ...pipelines,
