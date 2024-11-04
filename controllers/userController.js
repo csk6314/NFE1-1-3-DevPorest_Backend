@@ -27,9 +27,9 @@ const getUserInfo = async (req, res) => {
 };
 
 const registerUserProfile = async (req, res) => {
-  const { id, name } = req.userinfo;
-
   try {
+    const { id, name } = req.userinfo;
+
     const userDoc = await User.create({
       userID: id,
       name,
@@ -45,9 +45,9 @@ const registerUserProfile = async (req, res) => {
 };
 
 const modifyUserProfile = async (req, res) => {
-  const { id } = req.userinfo;
-
   try {
+    const { id } = req.userinfo;
+
     //github 정보인 name과 userID 변경 방지
     if (req.body["name"] || req.body["userID"]) {
       return res.status(400).json({
@@ -108,9 +108,9 @@ const getPopularUserProfile = async (req, res) => {
 };
 
 const getMyUserInfo = async (req, res) => {
-  const { id, name, profileImage } = req.userinfo;
-
   try {
+    const { id, name, profileImage } = req.userinfo;
+
     const user = await User.aggregate([
       { $match: { userID: id } },
       ...userProfilePipeline,
