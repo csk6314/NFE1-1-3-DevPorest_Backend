@@ -108,19 +108,22 @@ const modifyUserProfile = async (req, res) => {
 
 const getPopularUserProfile = async (req, res) => {
   try {
-    const user = await User.aggregate([
+    const users = await User.aggregate([
       ...userProfilePipeline,
       {
-        $sort: { totalLikes: -1 }, // 총 좋아요 수를 기준으로 내림차순 정렬
+        $sort: {
+          totalLikes: -1,
+          createdAt: -1, // 좋아요 수가 같을 경우 최근 가입순
+        },
       },
       {
         $limit: 5,
       },
-    ]);
+    ]).exec();
 
     res.status(200).json({
       success: true,
-      data: user,
+      data: users,
     });
   } catch (error) {
     res.status(500).json({

@@ -1,59 +1,47 @@
 const userProfilePipeline = [
+  // 1단계: 기본 totalLikes 0 할당
+  {
+    $addFields: {
+      totalLikes: 0,
+    },
+  },
+  // 2단계: 포트폴리오 조회
   {
     $lookup: {
-      // 유저의 portfolio와 join
       from: "portfolios",
       localField: "userID",
       foreignField: "userID",
-      as: "user_portfolios",
-      pipeline: [
-        {
-          $project: {
-            _id: 1,
-          },
-        },
-      ],
+      as: "portfolios",
     },
   },
+  // 3단계: 포트폴리오별 좋아요 조회
   {
     $lookup: {
-      // 각 유저 포트폴리오와 like join
       from: "likes",
-      localField: "user_portfolios._id",
+      localField: "portfolios._id",
       foreignField: "portfolioID",
-      as: "post_likes",
-      pipeline: [
-        {
-          $project: {
-            _id: 1,
-          },
-        },
-      ],
+      as: "allLikes",
     },
   },
+  // 4단계: 실제 좋아요 수 계산하여 덮어쓰기
   {
     $addFields: {
-      // 포스트의 좋아요 수 필드 추가
-      totalLikes: { $size: "$post_likes" },
+      totalLikes: { $size: "$allLikes" },
     },
   },
-  {
-    $project: {
-      // 불필요한 필드 제거
-      user_portfolios: 0,
-      post_likes: 0,
-      __v: 0,
-      _id: 0,
-    },
-  },
+  // 5단계: 기술스택 조인 (preserveNullAndEmptyArrays:true로 모든 유저 유지)
   {
     $lookup: {
-      // 기술스택 join
       from: "techstacks",
-      localField: "techStack",
-      foreignField: "skill",
-      as: "techStack",
+      let: { skills: "$techStack" },
       pipeline: [
+        {
+          $match: {
+            $expr: {
+              $in: ["$skill", "$$skills"],
+            },
+          },
+        },
         {
           $project: {
             __v: 0,
@@ -61,16 +49,22 @@ const userProfilePipeline = [
           },
         },
       ],
+      as: "techStack",
     },
   },
+  // 6단계: 직무 정보 조인 (preserveNullAndEmptyArrays:true로 모든 유저 유지)
   {
     $lookup: {
-      // 직무 정보 join
       from: "jobgroups",
-      localField: "jobGroup",
-      foreignField: "_id",
-      as: "jobGroup",
+      let: { jobGroupId: "$jobGroup" },
       pipeline: [
+        {
+          $match: {
+            $expr: {
+              $eq: ["$_id", "$$jobGroupId"],
+            },
+          },
+        },
         {
           $project: {
             __v: 0,
@@ -78,15 +72,28 @@ const userProfilePipeline = [
           },
         },
       ],
+      as: "jobGroup",
     },
   },
   {
-    $unwind: "$jobGroup",
+    $unwind: {
+      path: "$jobGroup",
+      preserveNullAndEmptyArrays: true,
+    },
   },
   {
     $addFields: {
       // jobGroup 필드를 객체 형태에서 String으로 변환
       jobGroup: "$jobGroup.job",
+    },
+  },
+  // 마지막 단계: 불필요한 필드 제거
+  {
+    $project: {
+      portfolios: 0,
+      allLikes: 0,
+      __v: 0,
+      _id: 0,
     },
   },
 ];
