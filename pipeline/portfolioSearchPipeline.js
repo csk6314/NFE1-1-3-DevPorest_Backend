@@ -17,6 +17,8 @@ const createSearchPipeline = (params) => {
     searchType = "title", // default : title
     keyword = "",
     sort = "latest", // default : latest
+    page = 1,
+    limit = 15,
   } = params;
 
   const pipeline = [];
@@ -233,6 +235,12 @@ const createSearchPipeline = (params) => {
       break;
     default: // latest
       pipeline.push({ $sort: { createdAt: -1 } });
+  }
+
+  // 10. 페이지네이션 적용
+  if (page && limit) {
+    pipeline.push({ $skip: (page - 1) * limit });
+    pipeline.push({ $limit: limit });
   }
 
   return pipeline;
