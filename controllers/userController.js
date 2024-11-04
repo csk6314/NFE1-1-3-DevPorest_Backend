@@ -107,9 +107,40 @@ const getPopularUserProfile = async (req, res) => {
   }
 };
 
+const getMyUserInfo = async (req, res) => {
+  const { id, name, profileImage } = req.userinfo;
+
+  try {
+    const user = await User.aggregate([
+      { $match: { userID: id } },
+      ...userProfilePipeline,
+    ]);
+
+    if (user.length < 1) {
+      return res.json({
+        success: true,
+        data: {
+          userID: id,
+          name,
+          profileImage,
+          newUser: true,
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { ...user[0], newUser: false },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "서버에러" });
+  }
+};
+
 module.exports = {
   getUserInfo,
   registerUserProfile,
   modifyUserProfile,
   getPopularUserProfile,
+  getMyUserInfo,
 };
