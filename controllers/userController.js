@@ -27,36 +27,13 @@ const getUserInfo = async (req, res) => {
 };
 
 const registerUserProfile = async (req, res) => {
-  const { id, access_token } = req.userinfo;
-
-  // AccessToken을 사용하여 Github 유저 정보 가져오기
-  const userData = await fetch("https://api.github.com/user", {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-    },
-  }).then((res) => res.json());
-
-  const {
-    email,
-    phoneNumber,
-    links,
-    intro,
-    profileImage,
-    techStack,
-    jobGroup,
-  } = req.body;
+  const { id, name } = req.userinfo;
 
   try {
     const userDoc = await User.create({
       userID: id,
-      name: userData.name,
-      links,
-      email,
-      phoneNumber,
-      intro,
-      profileImage,
-      techStack,
-      jobGroup,
+      name,
+      ...req.body,
     });
     res.json(userDoc);
   } catch (err) {
