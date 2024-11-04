@@ -7,6 +7,8 @@ const userController = require("../controllers/userController");
 //middleware
 const auth = require("../middleware/auth");
 
+router.get("/user", userController.getMyUserInfo);
+
 router.get("/user/:userid", userController.getUserInfo);
 
 router.get("/popular", userController.getPopularUserProfile);
@@ -62,6 +64,97 @@ module.exports = router;
  *         profileImage:
  *           type: string
  *           description: 유저 프로필 이미지 URL
+ */
+
+/**
+ * @swagger
+ * /api/users/user:
+ *   get:
+ *     summary: 내 프로필 조회
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: 내 프로필 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/User'
+ *                     - type: object
+ *                       properties:
+ *                         techStack:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - type: object
+ *                                 properties:
+ *                               - $ref: '#/components/schemas/TechStack'
+ *                         totalLikes:
+ *                           type: number
+ *                           example: 0
+ *                         createdAt:
+ *                           type: Date
+ *                           example: "date"
+ *                         newUser:
+ *                           type: boolean
+ *                           example: false
+ *       200-1:
+ *         description: 내 프로필 조회 성공 (신규유저)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userID:
+ *                       type: string
+ *                       example: string
+ *                     name:
+ *                       type: string
+ *                       example: string
+ *                     profileImage:
+ *                       type: string
+ *                       example: string
+ *                     newUser:
+ *                       type: boolean
+ *                       example: false
+ *       404:
+ *         description: 유저를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 해당 ID의 유저를 찾을 수 없습니다.
+ *       500:
+ *         description: 유저를 찾을 수 없음
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: 서버 에러
  */
 
 /**
