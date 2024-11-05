@@ -31,8 +31,6 @@ const searchPortfolios = async (req, res) => {
       limit: parseInt(limit),
     };
 
-    const totalCount = await Portfolio.countDocuments();
-
     // 실제 검색 실행
     const pipeline = createSearchPipeline(searchParams);
 
@@ -43,6 +41,11 @@ const searchPortfolios = async (req, res) => {
       ...countPipeline,
       { $count: "total" },
     ]);
+
+    const totalCount = countResult ? countResult.total : 0;
+    // 페이지네이션 적용
+    pipeline.push({ $skip: (searchParams.page - 1) * searchParams.limit });
+    pipeline.push({ $limit: searchParams.limit });
 
     const portfolios = await Portfolio.aggregate(pipeline);
 
