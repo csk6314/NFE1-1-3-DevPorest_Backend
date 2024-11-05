@@ -16,8 +16,8 @@ const searchPortfolios = async (req, res) => {
       searchType = "title", // default : title
       keyword = "",
       sort = "latest",
-      page = 1,
-      limit = 15,
+      page = "1",
+      limit = "15",
     } = req.query;
 
     // 검색 파라미터 정제
@@ -31,6 +31,8 @@ const searchPortfolios = async (req, res) => {
       limit: parseInt(limit),
     };
 
+    const totalCount = await Portfolio.countDocuments();
+
     // 실제 검색 실행
     const pipeline = createSearchPipeline(searchParams);
 
@@ -42,9 +44,13 @@ const searchPortfolios = async (req, res) => {
       { $count: "total" },
     ]);
 
-    const totalCount = countResult ? countResult.total : 0;
     const portfolios = await Portfolio.aggregate(pipeline);
-    const pagination = createPaginationMetadata(totalCount, page, limit);
+
+    const pagination = createPaginationMetadata(
+      totalCount,
+      searchParams.page,
+      searchParams.limit
+    );
 
     res.status(200).json({
       success: true,
