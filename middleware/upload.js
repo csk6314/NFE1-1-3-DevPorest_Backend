@@ -56,7 +56,7 @@ const upload = multer({
         }
         //포트폴리오 썸네일 처리
         if (usage === "thumbnail") {
-          cb(null, `${portfolioID}/thumbnail.png`);
+          cb(null, `${userID}/thumbnail.png`);
           return;
         }
 

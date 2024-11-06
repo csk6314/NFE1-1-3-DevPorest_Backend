@@ -13,7 +13,7 @@ router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfo
 router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
 router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
 router.post(
-  "/upload/:id",
+  "/upload",
   auth,
   upload.single("image"),
   portfolioController.uploadSingleImage
@@ -715,7 +715,7 @@ module.exports = router;
  */
 /**
  * @swagger
- * /api/portfolios/upload/{id}:
+ * /api/portfolios/upload:
  *   post:
  *     summary: 단일 이미지 업로드 (인증 필요)
  *     description: |
@@ -727,12 +727,6 @@ module.exports = router;
  *     security:
  *       - cookieAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: false
- *         schema:
- *           type: string
- *         description: 포트폴리오 ID
  *       - in: query
  *         name: usage
  *         required: true
