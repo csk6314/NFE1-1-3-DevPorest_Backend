@@ -13,13 +13,13 @@ router.post("/", auth, portfolioController.createPortfolio); // POST /api/portfo
 router.put("/:id", auth, portfolioController.updatePortfolio); // PUT /api/portfolios/:id
 router.delete("/:id", auth, portfolioController.deletePortfolio); // DELETE /api/portfolios/:id
 router.post(
-  "/upload",
+  "/upload/:id",
   auth,
   upload.single("image"),
   portfolioController.uploadSingleImage
 );
 router.post(
-  "/uploads",
+  "/uploads/:id",
   auth,
   upload.array("images", 5),
   portfolioController.uploadMultipleImages
@@ -715,7 +715,7 @@ module.exports = router;
  */
 /**
  * @swagger
- * /api/portfolios/upload:
+ * /api/portfolios/upload/{id}:
  *   post:
  *     summary: 단일 이미지 업로드 (인증 필요)
  *     description: |
@@ -726,6 +726,19 @@ module.exports = router;
  *     tags: [Portfolios]
  *     security:
  *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID
+ *       - in: query
+ *         name: usage
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 사용 용도
  *     requestBody:
  *       required: true
  *       content:
@@ -734,7 +747,7 @@ module.exports = router;
  *             type: object
  *             properties:
  *               image:
- *                 type: string
+ *                 type: file
  *                 format: binary
  *                 description: 업로드할 이미지 파일
  *     responses:
@@ -764,7 +777,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /api/portfolios/uploads:
+ * /api/portfolios/uploads/{id}:
  *   post:
  *     summary: 다중 이미지 업로드 (인증 필요)
  *     description: |
@@ -776,6 +789,19 @@ module.exports = router;
  *     tags: [Portfolios]
  *     security:
  *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: 포트폴리오 ID
+ *       - in: query
+ *         name: usage
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 사용 용도
  *     requestBody:
  *       required: true
  *       content:
@@ -786,7 +812,7 @@ module.exports = router;
  *               images:
  *                 type: array
  *                 items:
- *                   type: string
+ *                   type: file
  *                   format: binary
  *                 description: 업로드할 이미지 파일들
  *     responses:
