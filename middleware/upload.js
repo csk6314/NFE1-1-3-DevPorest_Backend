@@ -41,10 +41,10 @@ const upload = multer({
     key: function (req, file, cb) {
       try {
         const usage = req.query.usage ?? "profile";
+        const userID = req.userinfo.id;
 
         //유저 프로필 사진 처리
         if (usage === "profile") {
-          const userID = req.userinfo.id;
           cb(null, `${userID}/profile.png}`);
           return;
         }
@@ -56,7 +56,7 @@ const upload = multer({
         }
         //포트폴리오 썸네일 처리
         if (usage === "thumbnail") {
-          cb(null, `${portfolioID}/thumbnail.png`);
+          cb(null, `${userID}/${portfolioID}/thumbnail.png`);
           return;
         }
 
@@ -67,7 +67,7 @@ const upload = multer({
           }
           req.fileCount += 1;
           console.log(req.fileCount);
-          cb(null, `${portfolioID}/${req.fileCount}.png`);
+          cb(null, `${userID}/${portfolioID}/${req.fileCount}.png`);
         }
       } catch (error) {
         cb(error);
