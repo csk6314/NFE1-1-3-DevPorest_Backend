@@ -77,13 +77,14 @@ const uploadSingleImage = async (req, res) => {
       });
     }
 
-    // multer-s3는 자동으로 S3에 업로드하고 location을 제공
-    const imageUrl = req.file.location;
+    // // multer-s3는 자동으로 S3에 업로드하고 location을 제공
+    // const imageUrl = req.file.location;
+    const cloudfrontUrl = `${process.env.cloudfrontDomain}/${req.file.key}`;
 
     res.status(200).json({
       success: true,
       data: {
-        url: imageUrl,
+        url: cloudfrontUrl,
       },
     });
   } catch (error) {
@@ -103,13 +104,20 @@ const uploadMultipleImages = async (req, res) => {
       });
     }
 
+    console.log(req.files);
+
     // multer-s3는 자동으로 S3에 업로드하고 각 파일의 location을 제공
-    const imageUrls = req.files.map((file) => file.location);
+    // const imageUrls = req.files.map((file) => file.location);
+    const cloudfrontUrls = req.files.map(
+      (file) => `${process.env.cloudfrontDomain}/${file.key}`
+    );
+
+    console.log(cloudfrontUrls);
 
     res.status(200).json({
       success: true,
       data: {
-        urls: imageUrls,
+        urls: cloudfrontUrls,
       },
     });
   } catch (error) {
