@@ -17,6 +17,8 @@ const createSearchPipeline = (params) => {
     searchType = "title", // default : title
     keyword = "",
     sort = "latest", // default : latest
+    page = 1,
+    limit = 15,
   } = params;
 
   const pipeline = [];

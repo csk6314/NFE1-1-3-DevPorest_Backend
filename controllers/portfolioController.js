@@ -16,8 +16,8 @@ const searchPortfolios = async (req, res) => {
       searchType = "title", // default : title
       keyword = "",
       sort = "latest",
-      page = 1,
-      limit = 15,
+      page = "1",
+      limit = "15",
     } = req.query;
 
     // 검색 파라미터 정제
@@ -43,8 +43,17 @@ const searchPortfolios = async (req, res) => {
     ]);
 
     const totalCount = countResult ? countResult.total : 0;
+    // 페이지네이션 적용
+    pipeline.push({ $skip: (searchParams.page - 1) * searchParams.limit });
+    pipeline.push({ $limit: searchParams.limit });
+
     const portfolios = await Portfolio.aggregate(pipeline);
-    const pagination = createPaginationMetadata(totalCount, page, limit);
+
+    const pagination = createPaginationMetadata(
+      totalCount,
+      searchParams.page,
+      searchParams.limit
+    );
 
     res.status(200).json({
       success: true,
@@ -68,13 +77,14 @@ const uploadSingleImage = async (req, res) => {
       });
     }
 
-    // multer-s3는 자동으로 S3에 업로드하고 location을 제공
-    const imageUrl = req.file.location;
+    // // multer-s3는 자동으로 S3에 업로드하고 location을 제공
+    // const imageUrl = req.file.location;
+    const cloudfrontUrl = `${process.env.cloudfrontDomain}/${req.file.key}`;
 
     res.status(200).json({
       success: true,
       data: {
-        url: imageUrl,
+        url: cloudfrontUrl,
       },
     });
   } catch (error) {
@@ -95,12 +105,17 @@ const uploadMultipleImages = async (req, res) => {
     }
 
     // multer-s3는 자동으로 S3에 업로드하고 각 파일의 location을 제공
-    const imageUrls = req.files.map((file) => file.location);
+    // const imageUrls = req.files.map((file) => file.location);
+    const cloudfrontUrls = req.files.map(
+      (file) => `${process.env.cloudfrontDomain}/${file.key}`
+    );
+
+    console.log(cloudfrontUrls);
 
     res.status(200).json({
       success: true,
       data: {
-        urls: imageUrls,
+        urls: cloudfrontUrls,
       },
     });
   } catch (error) {

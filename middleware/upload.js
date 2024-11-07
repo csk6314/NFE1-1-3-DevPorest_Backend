@@ -27,15 +27,50 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+const convertToPNG = async (file) => {
+  const pngImage = await sharp(file).png().toBuffer();
+  return pngImage;
+};
+
 // Multer S3 설정
 const upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: process.env.AWS_S3_BUCKET,
+
     key: function (req, file, cb) {
-      const userID = req.userinfo.id;
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, `${userID}/${uniqueSuffix}${path.extname(file.originalname)}`);
+      try {
+        const usage = req.query.usage ?? "profile";
+        const userID = req.userinfo.id;
+
+        //유저 프로필 사진 처리
+        if (usage === "profile") {
+          cb(null, `${userID}/profile.png}`);
+          return;
+        }
+
+        const portfolioID = req.params.id;
+
+        if (!portfolioID) {
+          throw new Error("No Portfolio ID");
+        }
+        //포트폴리오 썸네일 처리
+        if (usage === "thumbnail") {
+          cb(null, `${userID}/${portfolioID}/thumbnail.png`);
+          return;
+        }
+
+        //포트폴리오 컨텐트 이미지 처리
+        if (usage === "content") {
+          if (!req.fileCount) {
+            req.fileCount = 0;
+          }
+          req.fileCount += 1;
+          cb(null, `${userID}/${portfolioID}/${req.fileCount}.png`);
+        }
+      } catch (error) {
+        cb(error);
+      }
     },
     contentType: multerS3.AUTO_CONTENT_TYPE,
   }),

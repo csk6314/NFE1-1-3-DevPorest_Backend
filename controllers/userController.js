@@ -27,36 +27,13 @@ const getUserInfo = async (req, res) => {
 };
 
 const registerUserProfile = async (req, res) => {
-  const { id, access_token } = req.userinfo;
-
-  // AccessToken을 사용하여 Github 유저 정보 가져오기
-  const userData = await fetch("https://api.github.com/user", {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-    },
-  }).then((res) => res.json());
-
-  const {
-    email,
-    phoneNumber,
-    links,
-    intro,
-    profileImage,
-    techStack,
-    jobGroup,
-  } = req.body;
-
   try {
+    const { id, name } = req.userinfo;
+
     const userDoc = await User.create({
       userID: id,
-      name: userData.name,
-      links,
-      email,
-      phoneNumber,
-      intro,
-      profileImage,
-      techStack,
-      jobGroup,
+      name,
+      ...req.body,
     });
     res.json(userDoc);
   } catch (err) {
@@ -68,9 +45,9 @@ const registerUserProfile = async (req, res) => {
 };
 
 const modifyUserProfile = async (req, res) => {
-  const { id } = req.userinfo;
-
   try {
+    const { id } = req.userinfo;
+
     //github 정보인 name과 userID 변경 방지
     if (req.body["name"] || req.body["userID"]) {
       return res.status(400).json({
@@ -108,19 +85,22 @@ const modifyUserProfile = async (req, res) => {
 
 const getPopularUserProfile = async (req, res) => {
   try {
-    const user = await User.aggregate([
+    const users = await User.aggregate([
       ...userProfilePipeline,
       {
-        $sort: { totalLikes: -1 }, // 총 좋아요 수를 기준으로 내림차순 정렬
+        $sort: {
+          totalLikes: -1,
+          createdAt: -1, // 좋아요 수가 같을 경우 최근 가입순
+        },
       },
       {
         $limit: 5,
       },
-    ]);
+    ]).exec();
 
     res.status(200).json({
       success: true,
-      data: user,
+      data: users,
     });
   } catch (error) {
     res.status(500).json({
@@ -130,9 +110,40 @@ const getPopularUserProfile = async (req, res) => {
   }
 };
 
+const getMyUserInfo = async (req, res) => {
+  try {
+    const { id, name, profileImage } = req.userinfo;
+
+    const user = await User.aggregate([
+      { $match: { userID: id } },
+      ...userProfilePipeline,
+    ]);
+
+    if (user.length < 1) {
+      return res.json({
+        success: true,
+        data: {
+          userID: id,
+          name,
+          profileImage,
+          newUser: true,
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { ...user[0], newUser: false },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "서버에러" });
+  }
+};
+
 module.exports = {
   getUserInfo,
   registerUserProfile,
   modifyUserProfile,
   getPopularUserProfile,
+  getMyUserInfo,
 };
