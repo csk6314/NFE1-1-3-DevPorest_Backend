@@ -66,7 +66,6 @@ const upload = multer({
             req.fileCount = 0;
           }
           req.fileCount += 1;
-          console.log(req.fileCount);
           cb(null, `${userID}/${portfolioID}/${req.fileCount}.png`);
         }
       } catch (error) {
