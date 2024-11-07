@@ -104,8 +104,6 @@ const uploadMultipleImages = async (req, res) => {
       });
     }
 
-    console.log(req.files);
-
     // multer-s3는 자동으로 S3에 업로드하고 각 파일의 location을 제공
     // const imageUrls = req.files.map((file) => file.location);
     const cloudfrontUrls = req.files.map(
