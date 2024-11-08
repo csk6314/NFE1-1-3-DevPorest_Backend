@@ -2,11 +2,11 @@ const jwt = require("jsonwebtoken");
 const secret = process.env.JWT_SECRET;
 const redirectURL =
   process.env.NODE_ENV === "production"
-    ? `${process.env.SERVER_DEPLOY_URL}:${process.env.PORT}/api/auth/github/callback`
+    ? `${process.env.SERVER_DEPLOY_URL}/api/auth/github/callback`
     : "http://localhost:8000/api/auth/github/callback";
 const frontMainURL =
   process.env.NODE_ENV === "production"
-    ? "http://localhost:5173/login" // 나중에 배포 주소로 변경 해야함
+    ? `${process.env.CORS_ORIGIN}/login` // 나중에 배포 주소로 변경 해야함
     : "http://localhost:5173/login";
 
 const getGithubRedirectURL = (req, res) => {
