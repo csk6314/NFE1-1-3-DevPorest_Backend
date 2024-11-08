@@ -42,6 +42,7 @@ app.use(
 
 app.use(express.json()); // JSON 파싱
 app.use(cookieParser()); // 쿠키 파싱
+app.use(express.json({ limit: "7mb" }));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs)); // Swagger UI를 /api-docs 경로에 라우팅
 
 app.use(

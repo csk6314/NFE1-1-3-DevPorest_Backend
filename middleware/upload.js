@@ -27,11 +27,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const convertToPNG = async (file) => {
-  const pngImage = await sharp(file).png().toBuffer();
-  return pngImage;
-};
-
 // Multer S3 설정
 const upload = multer({
   storage: multerS3({
@@ -62,11 +57,8 @@ const upload = multer({
 
         //포트폴리오 컨텐트 이미지 처리
         if (usage === "content") {
-          if (!req.fileCount) {
-            req.fileCount = 0;
-          }
-          req.fileCount += 1;
-          cb(null, `${userID}/${portfolioID}/${req.fileCount}.png`);
+          const idx = file.originalname.split(".")[0];
+          cb(null, `${userID}/${portfolioID}/${idx}.png`);
         }
       } catch (error) {
         cb(error);
