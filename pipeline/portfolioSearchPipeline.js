@@ -200,17 +200,18 @@ const createSearchPipeline = (params) => {
                   ],
                 },
               },
-              in: {
-                // 필요한 필드들만 명시적으로 포함
-                skill: "$$stackInfo.skill",
-                bgColor: "$$stackInfo.bgColor",
-                textColor: "$$stackInfo.textColor",
-                jobCode: "$$stackInfo.jobCode",
-              },
+              in: "$$stackInfo",
             },
           },
         },
       },
+    },
+  });
+
+  pipeline.push({
+    $project: {
+      "techStack._id": 0,
+      "techStack.__v": 0,
     },
   });
 
