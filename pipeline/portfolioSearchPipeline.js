@@ -172,24 +172,46 @@ const createSearchPipeline = (params) => {
   pipeline.push({
     $lookup: {
       from: "techstacks",
-      let: { techSkills: "$techStack" },
-      pipeline: [
-        {
-          $match: {
-            $expr: { $in: ["$skill", "$$techSkills"] },
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            skill: 1,
-            bgColor: 1,
-            textColor: 1,
-            jobCode: 1,
-          },
-        },
-      ],
+      localField: "techStack",
+      foreignField: "skill",
       as: "techStackInfo",
+    },
+  });
+
+  pipeline.push({
+    $addFields: {
+      techStack: {
+        $map: {
+          input: "$techStack",
+          as: "stack",
+          in: {
+            $let: {
+              vars: {
+                stackInfo: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$techStackInfo",
+                        as: "info",
+                        cond: { $eq: ["$$stack", "$$info.skill"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+              in: "$$stackInfo",
+            },
+          },
+        },
+      },
+    },
+  });
+
+  pipeline.push({
+    $project: {
+      "techStack._id": 0,
+      "techStack.__v": 0,
     },
   });
 
@@ -215,7 +237,7 @@ const createSearchPipeline = (params) => {
       view: 1,
       images: 1,
       tags: 1,
-      techStack: "$techStackInfo",
+      techStack: 1,
       createdAt: 1,
       thumbnailImage: 1,
       userInfo: 1,
