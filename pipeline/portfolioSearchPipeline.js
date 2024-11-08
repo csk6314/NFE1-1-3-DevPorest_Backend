@@ -180,15 +180,34 @@ const createSearchPipeline = (params) => {
 
   pipeline.push({
     $addFields: {
-      techStackInfo: {
+      techStack: {
         $map: {
-          input: "$techStackInfo",
-          as: "item",
+          input: "$techStack",
+          as: "stack",
           in: {
-            skill: "$$item.skill",
-            bgColor: "$$item.bgColor",
-            textColor: "$$item.textColor",
-            jobCode: "$$item.jobCode",
+            $let: {
+              vars: {
+                stackInfo: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$techStackInfo",
+                        as: "info",
+                        cond: { $eq: ["$$stack", "$$info.skill"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+              in: {
+                // 필요한 필드들만 명시적으로 포함
+                skill: "$$stackInfo.skill",
+                bgColor: "$$stackInfo.bgColor",
+                textColor: "$$stackInfo.textColor",
+                jobCode: "$$stackInfo.jobCode",
+              },
+            },
           },
         },
       },
