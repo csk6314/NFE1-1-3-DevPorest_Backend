@@ -22,7 +22,7 @@ const options = {
         description: "Local Development",
       },
       {
-        url: `${process.env.SERVER_DEPLOY_URL}:${port}`,
+        url: `${process.env.SERVER_DEPLOY_URL}`,
         description: "Deploy Development",
       },
     ],
