@@ -40,7 +40,7 @@ const upload = multer({
 
         //유저 프로필 사진 처리
         if (usage === "profile") {
-          cb(null, `${userID}/profile.png}`);
+          cb(null, `${userID}/profile.png`);
           return;
         }
 
